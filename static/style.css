@@ -1325,6 +1325,19 @@ h2 {
     animation: pulse 1s infinite;
 }
 
+/* 网络类型指示器 */
+.network-type {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 6px;
+    border-radius: 8px;
+    background: rgba(33, 150, 243, 0.8);
+    color: white;
+    margin-left: 8px;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.6; }

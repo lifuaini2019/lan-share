@@ -179,28 +179,54 @@ func getLocalIP() string {
 	return "127.0.0.1"
 }
 
-func generateQRCode() (string, string) {
-	localIP := getLocalIP()
-	url := fmt.Sprintf("http://%s:%d", localIP, Port)
-	log.Printf("🔄 生成二维码URL: %s", url)
+func generateQRCode(r *http.Request) (string, string, bool) {
+	// 检测是否为域名访问
+	host := r.Host
+	isIPAccess := false
+
+	// 提取主机名（去除端口）
+	hostname := host
+	if colonIndex := strings.LastIndex(host, ":"); colonIndex != -1 {
+		hostname = host[:colonIndex]
+	}
+
+	// 判断是否为IP地址访问
+	if net.ParseIP(hostname) != nil {
+		isIPAccess = true
+	}
+
+	// 根据访问类型选择协议
+	var protocol string
+	var url string
+	if isIPAccess {
+		// IP访问使用http
+		protocol = "http"
+		url = fmt.Sprintf("%s://%s", protocol, host)
+	} else {
+		// 域名访问使用https
+		protocol = "https"
+		url = fmt.Sprintf("%s://%s", protocol, host)
+	}
+
+	log.Printf("🔄 生成二维码URL: %s (IP访问: %v)", url, isIPAccess)
 
 	// 使用与 Flask 版本相同的配置
 	qr, err := qrcode.New(url, qrcode.Medium)
 	if err != nil {
 		log.Printf("❌ 创建二维码失败: %v", err)
-		return "", url
+		return "", url, isIPAccess
 	}
 
 	// 生成PNG格式，使用 512x512 尺寸
 	pngData, err := qr.PNG(512)
 	if err != nil {
 		log.Printf("❌ 生成二维码PNG失败: %v", err)
-		return "", url
+		return "", url, isIPAccess
 	}
 
 	dataURL := "data:image/png;base64," + base64.StdEncoding.EncodeToString(pngData)
 	log.Printf("✅ 二维码生成成功！DataURL长度: %d", len(dataURL))
-	return dataURL, url
+	return dataURL, url, isIPAccess
 }
 
 func loadMessages() ([]Message, error) {
@@ -262,7 +288,7 @@ func createDefaultTemplates() TemplatesConfig {
 				Templates: []Template{
 					{
 						Title:   "欢迎使用",
-						Content: "欢迎使用我们的局域网文字共享系统！您可以在这里快速分享文字内容。",
+						Content: "欢迎使用祖宇字文共享系统！您可以在这里快速分享文字内容。",
 					},
 					{
 						Title:   "使用提示",
@@ -465,14 +491,24 @@ func indexHandler(c *gin.Context) {
 		messages = []Message{}
 	}
 
-	qrDataURL, serverURL := generateQRCode()
+	qrDataURL, serverURL, isIPAccess := generateQRCode(c.Request)
 	log.Printf("🔍 传递给模板的二维码数据长度: %d", len(qrDataURL))
 	log.Printf("🔍 传递给模板的服务器地址: %s", serverURL)
 
+	// 判断网络类型
+	var networkType string
+	if isIPAccess {
+		networkType = "局域网"
+	} else {
+		networkType = "广域网"
+	}
+
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"messages":    messages,
-		"qr_data_url": qrDataURL,
-		"server_url":  serverURL,
+		"messages":     messages,
+		"qr_data_url":  qrDataURL,
+		"server_url":   serverURL,
+		"network_type": networkType,
+		"is_ip_access": isIPAccess,
 	})
 }
 
@@ -522,20 +558,32 @@ func addMessageHandler(c *gin.Context) {
 
 // 二维码API接口
 func qrCodeHandler(c *gin.Context) {
-	qrDataURL, serverURL := generateQRCode()
+	qrDataURL, serverURL, isIPAccess := generateQRCode(c.Request)
+
+	// 判断网络类型
+	var networkType string
+	if isIPAccess {
+		networkType = "局域网"
+	} else {
+		networkType = "广域网"
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"qr_data_url": qrDataURL,
-		"server_url":  serverURL,
+		"qr_data_url":  qrDataURL,
+		"server_url":   serverURL,
+		"network_type": networkType,
+		"is_ip_access": isIPAccess,
 	})
 }
 
 // 测试二维码生成
 func testQRHandler(c *gin.Context) {
-	qrDataURL, serverURL := generateQRCode()
+	qrDataURL, serverURL, isIPAccess := generateQRCode(c.Request)
 	c.JSON(http.StatusOK, gin.H{
-		"qr_data_url": qrDataURL,
-		"server_url":  serverURL,
-		"qr_length":   len(qrDataURL),
+		"qr_data_url":  qrDataURL,
+		"server_url":   serverURL,
+		"qr_length":    len(qrDataURL),
+		"is_ip_access": isIPAccess,
 	})
 }
 

@@ -1,155 +1,160 @@
-# LAN-to-go 局域网共享服务器
+# 祖宇字文共享 - LAN Share Go
 
-🚀 **轻量级局域网文件和消息共享解决方案**
+[![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://golang.org)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS%20%7C%20OpenWrt-lightgrey.svg)]()
 
-一个使用Go语言开发的现代化局域网共享服务器，支持文件传输、消息共享、模板管理等功能。无需复杂配置，一键启动即可在局域网内快速分享内容。
+🌐 现代化的局域网共享服务器，支持实时消息同步、文件共享和模板管理
 
-## ✨ 特性
+## ✨ 主要特性
 
-- 🌐 **现代Web界面**：响应式设计，支持PC和移动端
-- 📱 **二维码访问**：自动生成局域网访问二维码，扫码即用
-- 🔄 **实时同步**：WebSocket技术实现多设备实时同步
-- 📁 **文件共享**：支持多种格式文件的快速传输
-- 💬 **消息模板**：预设模板系统，快速发送常用消息
-- 📊 **数据管理**：支持导入导出模板数据（TXT/JSON格式）
-- 🎯 **跨平台**：支持Windows、Linux、macOS、OpenWrt路由器
-- 🛡️ **安全可靠**：局域网内使用，数据不经过外部服务器
+- 🌐 **Web界面**: 现代化响应式设计，完美适配移动端
+- 📱 **二维码访问**: 自动生成局域网地址，手机扫码即用
+- 🔄 **实时同步**: WebSocket技术，多设备实时消息同步
+- 📁 **文件共享**: 拖拽上传，支持16MB以下多种格式
+- 💼 **模板系统**: 预设消息模板，客服场景快速响应
+- 📊 **导入导出**: 支持TXT/JSON格式的数据管理
+- 🎯 **跨平台**: Windows/Linux/macOS/OpenWrt全平台支持
+- 🐳 **Docker**: 支持容器化部署
 
 ## 🚀 快速开始
 
-### 📦 下载
+### 下载运行
 
-前往 [Releases](../../releases) 页面下载对应平台的版本：
+1. 从 [Releases](../../releases) 下载对应平台的可执行文件
+2. 解压并运行程序
+3. 打开浏览器访问 `http://localhost:9405`
+4. 手机扫描二维码即可访问
 
-- **Windows**: `lan-to-go-windows-amd64.zip`
-- **玩客云路由器**: `lan-to-go-openwrt-armv7.tar.gz`
-- **Linux**: `lan-to-go-linux-amd64.tar.gz`
-- **macOS**: `lan-to-go-macos-amd64` 或 `lan-to-go-macos-arm64`
+### Docker 部署
 
-### 🖥️ Windows 使用
+```bash
+# 构建镜像
+go build -o zuyu-share main.go
+docker build -t zuyu-share .
 
-1. 下载并解压 `lan-to-go-windows-amd64.zip`
-2. 双击运行 `start.bat`
-3. 程序会显示访问地址和二维码
-4. 在局域网内的其他设备上访问该地址即可
+# 运行容器
+docker run -d \
+  --name zuyu-share \
+  --restart unless-stopped \
+  -p 9405:9405 \
+  zuyu-share
+```
 
-### 📡 玩客云路由器使用
+## 📦 支持平台
 
-1. 下载 `lan-to-go-openwrt-armv7.tar.gz` 并解压
-2. 上传到玩客云的 `/root/` 目录
-3. SSH登录玩客云：
-   ```bash
-   cd /root/openwrt-package
-   chmod +x install_autostart.sh
-   ./install_autostart.sh
-   ```
-4. 选择自动启动，即可在浏览器访问 `http://路由器IP:9405`
+| 平台 | 架构 | 文件名 |
+|------|------|--------|
+| Windows | x64 | `zuyu-share-windows-amd64.exe` |
+| Windows | x86 | `zuyu-share-windows-386.exe` |
+| Linux | x64 | `zuyu-share-linux-amd64` |
+| Linux | x86 | `zuyu-share-linux-386` |
+| Linux | ARM64 | `zuyu-share-linux-arm64` |
+| macOS | Intel | `zuyu-share-darwin-amd64` |
+| macOS | Apple Silicon | `zuyu-share-darwin-arm64` |
+| OpenWrt | ARMv7 | `zuyu-share-linux-arm` |
 
-### 🐧 Linux 使用
-
-1. 下载并解压 `lan-to-go-linux-amd64.tar.gz`
-2. 运行启动脚本：
-   ```bash
-   cd linux-package
-   ./start.sh
-   ```
-
-## 📱 功能介绍
-
-### 🏠 文字共享
-- 快速发送文字消息到局域网内所有设备
-- 支持多设备实时同步
-- 历史消息记录
-
-### 📁 文件传输
-- 拖拽上传文件（最大16MB）
-- 支持多种文件格式
-- 实时传输状态显示
-- 独占/共享接收模式
-
-### 💼 模板系统
-- 预设常用消息模板
-- 分类管理（售前、售后、物流等）
-- 支持模板的增删改查
-- 数据导入导出功能
-
-## 🔧 技术规格
-
-- **开发语言**: Go 1.21
-- **Web框架**: Gin
-- **实时通信**: WebSocket
-- **前端技术**: HTML5 + CSS3 + JavaScript
-- **数据存储**: 本地文件（JSON + TXT）
-- **默认端口**: 9405
-- **内存占用**: ~10-15MB
-- **支持并发**: 100+ 连接
-
-## 🌟 版本特性
-
-### v2.0 (当前版本)
-
-#### 🔄 IP获取优化
-- **修复玩客云IP问题**：解决了在路由器环境下只显示127.0.0.1的问题
-- **多重IP获取策略**：UDP连接、网络接口扫描、Linux命令辅助
-- **智能IP优先级**：优先192.168.x.x，其次10.x.x.x和172.16-31.x.x
-
-#### 🚀 服务管理增强
-- **一键安装**：玩客云开机自启动安装脚本
-- **服务管理**：标准OpenWrt服务控制
-- **故障恢复**：自动重启和状态监控
-
-#### 📊 模板系统升级
-- **数据导入导出**：支持TXT和JSON格式
-- **批量操作**：模板的批量添加和管理
-- **数据清理**：移除了所有个人敏感信息
-
-## 🛠️ 本地开发
+## 🔧 本地构建
 
 ### 环境要求
+
 - Go 1.21+
-- 现代浏览器
+- Git
 
-### 编译运行
+### 构建步骤
+
 ```bash
-git clone https://github.com/yourusername/lan-to-go.git
-cd lan-to-go
-go mod download
+# 克隆项目
+git clone https://github.com/你的用户名/LAN-Share-Go.git
+cd LAN-Share-Go
+
+# 安装依赖
+go mod tidy
+
+# 本地运行
 go run main.go
+
+# 构建可执行文件
+go build -o zuyu-share main.go
+
+# 构建所有平台 (Windows)
+./build.bat
+
+# 构建所有平台 (Linux/macOS)
+chmod +x build.sh
+./build.sh
 ```
 
-### 构建发布版
-```bash
-chmod +x build_release.sh
-./build_release.sh
+## 🌟 功能亮点
+
+### 智能协议检测
+- IP访问自动使用HTTP协议
+- 域名访问自动使用HTTPS协议
+- 网络类型智能标识（局域网/广域网）
+
+### 移动端优化
+- 响应式界面设计
+- 触摸友好的操作体验
+- 点击空白处收起菜单
+
+### 实时同步
+- WebSocket长连接
+- 多设备消息实时同步
+- 连接状态实时显示
+
+## 🛡️ 技术栈
+
+- **后端**: Go 1.21 + Gin Framework
+- **前端**: HTML5 + CSS3 + JavaScript
+- **通信**: WebSocket + HTTP RESTful API
+- **二维码**: go-qrcode
+- **跨域**: Gin CORS
+
+## 📖 使用说明
+
+### 基本功能
+
+1. **发送消息**: 在文本框输入内容，点击发送或按Enter
+2. **文件上传**: 拖拽文件到上传区域或点击选择文件
+3. **模板使用**: 点击预设模板快速发送常用消息
+4. **清空消息**: 点击清空按钮清除所有消息
+5. **导入导出**: 管理和备份消息数据
+
+### 高级功能
+
+- **模板管理**: 自定义消息模板，支持分类管理
+- **实时同步**: 多个设备同时访问，消息实时同步
+- **移动适配**: 完美支持手机、平板等移动设备
+
+## 🔧 配置文件
+
+`templates_config.json` - 模板配置文件
+```json
+{
+  "通用": ["欢迎使用", "谢谢"],
+  "问候": ["你好", "早上好", "晚安"]
+}
 ```
 
-## 📝 使用场景
+## 📊 性能特点
 
-- **家庭网络**：家庭成员间快速分享照片、文档
-- **办公环境**：团队内部临时文件传输
-- **路由器服务**：在路由器上运行，全网设备可访问
-- **客服系统**：使用模板功能快速回复常见问题
-- **开发测试**：开发环境下的快速文件分享
-
-## ⚠️ 注意事项
-
-- 程序默认端口为9405，确保该端口未被占用
-- Windows首次运行时可能需要允许防火墙访问
-- 玩客云等路由器设备请确保有足够的内存（建议>30MB）
-- 局域网使用，不支持外网访问
+- **内存占用**: 10-15MB
+- **启动时间**: < 1秒
+- **并发支持**: 1000+ 连接
+- **文件大小**: 单文件 < 16MB
 
 ## 🤝 贡献
 
-欢迎提交Issue和Pull Request！
+欢迎提交 Issue 和 Pull Request！
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE](LICENSE) 文件
+本项目采用 [MIT](LICENSE) 许可证。
 
 ## 🙏 致谢
 
-感谢所有使用和贡献这个项目的用户！
+感谢所有为这个项目做出贡献的开发者们！
 
 ---
 
-⭐ 如果这个项目对您有帮助，请给个Star支持一下！
+**让局域网共享更简单！** 🚀

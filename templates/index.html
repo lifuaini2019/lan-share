@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>祖宇局域网共享</title>
+    <title>祖宇字文共享</title>
     <link rel="stylesheet" href="/static/style.css">
     <!-- 移除Socket.IO库，使用原生WebSocket -->
 </head>
@@ -59,8 +59,9 @@
     <div class="interface-container" id="textShareInterface">
         <div class="container">
             <h2>
-                📝 祖宇局域网共享 
+                📝 祖宇字文共享 
                 <span id="connection-status" class="connection-status">🔴 连接中...</span>
+                <span id="network-type" class="network-type">🌐 {{.network_type}}</span>
             </h2>
             
             <!-- 主要输入区域 -->
@@ -436,6 +437,13 @@ function loadQRCodes() {
             if (sidebarQrImage && data.qr_data_url) {
                 sidebarQrImage.src = data.qr_data_url;
                 console.log('✅ 侧边栏二维码已设置');
+            }
+            
+            // 更新网络类型显示
+            const networkTypeElement = document.getElementById('network-type');
+            if (networkTypeElement && data.network_type) {
+                networkTypeElement.textContent = `🌐 ${data.network_type}`;
+                console.log('✅ 网络类型已更新:', data.network_type);
             }
         })
         .catch(error => {
@@ -1143,6 +1151,37 @@ window.addEventListener('resize', function() {
         // 切换到桌面端，关闭移动端菜单
         document.getElementById('templateSidebar').classList.remove('mobile-open');
     }
+});
+
+// 添加点击主内容区域关闭移动端菜单的事件监听器
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContent = document.getElementById('mainContent');
+    const templateSidebar = document.getElementById('templateSidebar');
+    
+    // 点击主内容区域关闭菜单（仅在移动端并且菜单开启时）
+    if (mainContent) {
+        mainContent.addEventListener('click', function(e) {
+            // 检查是否为移动端并且菜单是开启状态
+            if (window.innerWidth <= 768 && templateSidebar.classList.contains('mobile-open')) {
+                // 确保点击的不是菜单按钮本身
+                const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+                if (!mobileMenuBtn.contains(e.target)) {
+                    closeMobileSidebar();
+                }
+            }
+        });
+    }
+    
+    // 也可以点击侧边栏以外的区域关闭菜单
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768 && templateSidebar.classList.contains('mobile-open')) {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            // 如果点击的不是侧边栏内部和菜单按钮，则关闭菜单
+            if (!templateSidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                closeMobileSidebar();
+            }
+        }
+    });
 });
 
 // === 侧边栏服务器信息功能 ===
