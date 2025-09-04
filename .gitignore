@@ -1,9 +1,15 @@
 # 构建输出
-build/
-releases/
-*.exe
-*.tar.gz
-*.zip
+# build/
+# releases/
+# release/
+docker_build/
+# *.exe
+# *.tar.gz
+# *.zip
+
+# 测试和临时文件
+test_lan_detection.html
+# zuyu-share-v*
 
 # 运行时生成的文件
 messages.txt
