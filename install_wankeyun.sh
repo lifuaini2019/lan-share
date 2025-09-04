@@ -63,6 +63,20 @@ fi
 echo "🔧 设置执行权限..."
 chmod +x zuyu-share
 
+# 创建必要目录
+echo "📁 创建必要目录..."
+mkdir -p templates static
+
+# 下载前端文件
+echo "⬇️ 下载前端文件..."
+if command -v wget >/dev/null 2>&1; then
+    wget -O templates/index.html "https://github.com/lifuaini2019/lan-share/raw/main/templates/index.html" || echo "⚠️ 前端页面下载失败"
+    wget -O static/style.css "https://github.com/lifuaini2019/lan-share/raw/main/static/style.css" || echo "⚠️ 样式文件下载失败"
+elif command -v curl >/dev/null 2>&1; then
+    curl -L -o templates/index.html "https://github.com/lifuaini2019/lan-share/raw/main/templates/index.html" || echo "⚠️ 前端页面下载失败"
+    curl -L -o static/style.css "https://github.com/lifuaini2019/lan-share/raw/main/static/style.css" || echo "⚠️ 样式文件下载失败"
+fi
+
 # 创建配置文件
 echo "📝 创建配置文件..."
 tee templates_config.json > /dev/null << 'EOF'

@@ -27,11 +27,11 @@ echo "🔍 检测到系统架构: $ARCH"
 # 确定下载文件名和Docker镜像
 if [[ "$ARCH" == "x86_64" ]]; then
     BINARY_NAME="zuyu-share-linux-amd64"
-    DOCKER_IMAGE_URL="https://github.com/username/LAN-Share-Go/releases/latest/download/zuyu-share-flynas-x86_64.tar"
+    DOCKER_IMAGE_URL="https://github.com/lifuaini2019/lan-share/releases/latest/download/zuyu-share-flynas-x86_64.tar"
     echo "💻 目标文件: $BINARY_NAME (x86_64)"
 elif [[ "$ARCH" == "aarch64" ]] || [[ "$ARCH" == "arm64" ]]; then
     BINARY_NAME="zuyu-share-linux-arm64"
-    DOCKER_IMAGE_URL="https://github.com/username/LAN-Share-Go/releases/latest/download/zuyu-share-flynas-arm64.tar"
+    DOCKER_IMAGE_URL="https://github.com/lifuaini2019/lan-share/releases/latest/download/zuyu-share-flynas-arm64.tar"
     echo "📱 目标文件: $BINARY_NAME (ARM64)"
 else
     echo "❌ 不支持的架构: $ARCH"
@@ -176,7 +176,7 @@ EOF
         
         # 下载二进制文件
         echo "⬇️ 正在从GitHub下载最新版本..."
-        DOWNLOAD_URL="https://github.com/username/LAN-Share-Go/releases/latest/download/$BINARY_NAME"
+        DOWNLOAD_URL="https://github.com/lifuaini2019/lan-share/releases/latest/download/$BINARY_NAME"
         
         if command -v wget >/dev/null 2>&1; then
             wget -O zuyu-share "$DOWNLOAD_URL"
@@ -196,6 +196,20 @@ EOF
         # 设置执行权限
         echo "🔧 设置执行权限..."
         chmod +x zuyu-share
+        
+        # 创建必要目录
+        echo "📁 创建必要目录..."
+        mkdir -p templates static
+        
+        # 下载前端文件
+        echo "⬇️ 下载前端文件..."
+        if command -v wget >/dev/null 2>&1; then
+            wget -O templates/index.html "https://github.com/lifuaini2019/lan-share/raw/main/templates/index.html" || echo "⚠️ 前端页面下载失败"
+            wget -O static/style.css "https://github.com/lifuaini2019/lan-share/raw/main/static/style.css" || echo "⚠️ 样式文件下载失败"
+        elif command -v curl >/dev/null 2>&1; then
+            curl -L -o templates/index.html "https://github.com/lifuaini2019/lan-share/raw/main/templates/index.html" || echo "⚠️ 前端页面下载失败"
+            curl -L -o static/style.css "https://github.com/lifuaini2019/lan-share/raw/main/static/style.css" || echo "⚠️ 样式文件下载失败"
+        fi
         
         # 创建配置文件
         echo "📝 创建配置文件..."
