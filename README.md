@@ -24,12 +24,12 @@
 
 **玩客云/路由器:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/username/LAN-Share-Go/main/install_wankeyun.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/lifuaini2019/lan-share/main/install_wankeyun.sh | bash
 ```
 
 **飞牛OS/NAS:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/username/LAN-Share-Go/main/install_flynas.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/lifuaini2019/lan-share/main/install_flynas.sh | sudo bash
 ```
 
 ### 下载运行

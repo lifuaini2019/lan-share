@@ -64,7 +64,7 @@ v2.1.0
 
 #### 玩客云/路由器一键安装
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lifuaini2019/lan-share/main/install_wankeyun.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/lifuaini2019/lan-share/main/install_wankeyun.sh | bash
 ```
 
 #### 飞牛OS一键安装

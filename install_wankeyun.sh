@@ -17,7 +17,7 @@ echo "✅ 网络连接正常"
 # 创建安装目录
 INSTALL_DIR="/opt/zuyu-share"
 echo "📁 创建安装目录: $INSTALL_DIR"
-sudo mkdir -p $INSTALL_DIR
+mkdir -p $INSTALL_DIR
 cd $INSTALL_DIR
 
 # 检测系统架构
@@ -41,12 +41,13 @@ fi
 
 # 下载最新版本
 echo "⬇️ 正在从GitHub下载最新版本..."
-DOWNLOAD_URL="https://github.com/username/LAN-Share-Go/releases/latest/download/$BINARY_NAME"
+DOWNLOAD_URL="https://github.com/lifuaini2019/lan-share/releases/latest/download/$BINARY_NAME"
 
+# 如果releases下载失败，尝试直接从仓库下载
 if command -v wget >/dev/null 2>&1; then
-    sudo wget -O zuyu-share "$DOWNLOAD_URL"
+    wget -O zuyu-share "$DOWNLOAD_URL" || wget -O zuyu-share "https://github.com/lifuaini2019/lan-share/raw/main/build/$BINARY_NAME"
 elif command -v curl >/dev/null 2>&1; then
-    sudo curl -L -o zuyu-share "$DOWNLOAD_URL"
+    curl -L -o zuyu-share "$DOWNLOAD_URL" || curl -L -o zuyu-share "https://github.com/lifuaini2019/lan-share/raw/main/build/$BINARY_NAME"
 else
     echo "❌ 需要 wget 或 curl 命令，请先安装"
     exit 1
@@ -60,11 +61,11 @@ fi
 
 # 设置执行权限
 echo "🔧 设置执行权限..."
-sudo chmod +x zuyu-share
+chmod +x zuyu-share
 
 # 创建配置文件
 echo "📝 创建配置文件..."
-sudo tee templates_config.json > /dev/null << 'EOF'
+tee templates_config.json > /dev/null << 'EOF'
 {
   "categories": {
     "home": {
@@ -117,7 +118,7 @@ EOF
 
 # 创建系统服务文件
 echo "🔧 创建系统服务..."
-sudo tee /etc/init.d/zuyu-share > /dev/null << 'EOF'
+tee /etc/init.d/zuyu-share > /dev/null << 'EOF'
 #!/bin/sh /etc/rc.common
 
 START=95
@@ -143,13 +144,13 @@ stop_service() {
 EOF
 
 # 设置服务权限
-sudo chmod +x /etc/init.d/zuyu-share
+chmod +x /etc/init.d/zuyu-share
 
 # 启用开机自启动
 echo "🔄 启用开机自启动..."
 if command -v systemctl >/dev/null 2>&1; then
     # systemd 系统
-    sudo tee /etc/systemd/system/zuyu-share.service > /dev/null << EOF
+    tee /etc/systemd/system/zuyu-share.service > /dev/null << EOF
 [Unit]
 Description=Zuyu Share Service
 After=network.target
@@ -166,11 +167,11 @@ RestartSec=3
 WantedBy=multi-user.target
 EOF
     
-    sudo systemctl daemon-reload
-    sudo systemctl enable zuyu-share
+    systemctl daemon-reload
+    systemctl enable zuyu-share
 elif command -v rc-update >/dev/null 2>&1; then
     # OpenRC 系统 (OpenWrt)
-    sudo rc-update add zuyu-share default
+    rc-update add zuyu-share default
 else
     echo "⚠️ 无法自动配置开机自启动，请手动配置"
 fi
@@ -184,19 +185,19 @@ fi
 # 启动服务
 echo "🚀 启动服务..."
 if command -v systemctl >/dev/null 2>&1; then
-    sudo systemctl start zuyu-share
+    systemctl start zuyu-share
     sleep 2
-    if sudo systemctl is-active --quiet zuyu-share; then
+    if systemctl is-active --quiet zuyu-share; then
         echo "✅ 服务启动成功"
     else
         echo "❌ 服务启动失败，尝试手动启动..."
         cd /opt/zuyu-share
-        sudo nohup ./zuyu-share > /var/log/zuyu-share.log 2>&1 &
+        nohup ./zuyu-share > /var/log/zuyu-share.log 2>&1 &
         sleep 2
     fi
 else
     cd /opt/zuyu-share
-    sudo nohup ./zuyu-share > /var/log/zuyu-share.log 2>&1 &
+    nohup ./zuyu-share > /var/log/zuyu-share.log 2>&1 &
     sleep 2
 fi
 
@@ -217,16 +218,16 @@ echo "   本机访问: http://127.0.0.1:9405"
 echo ""
 echo "🔧 服务管理命令："
 if command -v systemctl >/dev/null 2>&1; then
-    echo "   启动服务: sudo systemctl start zuyu-share"
-    echo "   停止服务: sudo systemctl stop zuyu-share"
-    echo "   重启服务: sudo systemctl restart zuyu-share"
-    echo "   查看状态: sudo systemctl status zuyu-share"
-    echo "   查看日志: sudo journalctl -u zuyu-share -f"
+    echo "   启动服务: systemctl start zuyu-share"
+    echo "   停止服务: systemctl stop zuyu-share"
+    echo "   重启服务: systemctl restart zuyu-share"
+    echo "   查看状态: systemctl status zuyu-share"
+    echo "   查看日志: journalctl -u zuyu-share -f"
 else
-    echo "   启动服务: sudo /etc/init.d/zuyu-share start"
-    echo "   停止服务: sudo /etc/init.d/zuyu-share stop"
-    echo "   重启服务: sudo /etc/init.d/zuyu-share restart"
-    echo "   查看日志: sudo tail -f /var/log/zuyu-share.log"
+    echo "   启动服务: /etc/init.d/zuyu-share start"
+    echo "   停止服务: /etc/init.d/zuyu-share stop"
+    echo "   重启服务: /etc/init.d/zuyu-share restart"
+    echo "   查看日志: tail -f /var/log/zuyu-share.log"
 fi
 echo ""
 echo "📁 程序目录: /opt/zuyu-share"
