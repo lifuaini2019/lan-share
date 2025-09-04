@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能局域网检测测试</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 12px; 
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        button { 
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin: 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        .result { 
+            margin-top: 15px; 
+            padding: 15px; 
+            border-radius: 6px; 
+            background: rgba(255, 255, 255, 0.1);
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .status { 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .success { background: rgba(40, 167, 69, 0.3); }
+        .error { background: rgba(220, 53, 69, 0.3); }
+        .info { background: rgba(23, 162, 184, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 智能局域网检测功能测试</h1>
+        
+        <div class="test-section">
+            <h3>📡 当前访问信息</h3>
+            <div class="status info" id="currentInfo">
+                正在获取当前访问信息...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 API测试</h3>
+            <button onclick="testLANDetectionAPI()">测试局域网检测API</button>
+            <button onclick="testDirectAccess()">模拟直接调用检测</button>
+            <button onclick="clearResults()">清空结果</button>
+            <div id="apiTestResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 模拟测试场景</h3>
+            <button onclick="simulateDomainAccess()">模拟域名访问</button>
+            <button onclick="simulateIPAccess()">模拟IP访问</button>
+            <button onclick="simulateRemoteAccess()">模拟远程访问</button>
+            <div id="simulationResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎭 智能提示演示</h3>
+            <button onclick="showSamplePrompt()">显示切换提示示例</button>
+            <button onclick="testActualDetection()">执行真实检测</button>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时显示当前访问信息
+        window.onload = function() {
+            showCurrentAccessInfo();
+        };
+        
+        // 显示当前访问信息
+        function showCurrentAccessInfo() {
+            const info = document.getElementById('currentInfo');
+            info.innerHTML = `
+                🌐 当前域名: ${window.location.hostname}
+                📍 当前端口: ${window.location.port}
+                🔗 完整地址: ${window.location.href}
+                👤 用户代理: ${navigator.userAgent.substring(0, 60)}...
+                📱 屏幕尺寸: ${screen.width}x${screen.height}
+                🕐 当前时间: ${new Date().toLocaleString('zh-CN')}
+            `;
+        }
+        
+        // 测试局域网检测API
+        function testLANDetectionAPI() {
+            const resultDiv = document.getElementById('apiTestResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 正在调用API...';
+            
+            fetch('/api/lan-check')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    resultDiv.innerHTML = `
+✅ API调用成功！
+
+📊 检测结果：
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌐 当前主机: ${data.current_host}
+📍 客户端IP: ${data.client_ip}
+🏠 本机局域网IP: ${data.local_ip}
+🔍 是否IP访问: ${data.is_ip_access ? '是' : '否'}
+📶 客户端在局域网: ${data.is_client_in_lan ? '是' : '否'}
+🔔 需要提示切换: ${data.need_switch_prompt ? '是' : '否'}
+🔗 局域网地址: ${data.lan_url}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 分析：
+${analyzeDetectionResult(data)}
+                    `;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `
+❌ API调用失败！
+
+错误信息: ${error.message}
+                    `;
+                });
+        }
+        
+        // 分析检测结果
+        function analyzeDetectionResult(data) {
+            let analysis = '';
+            
+            if (data.need_switch_prompt) {
+                analysis += '🎯 符合切换条件：通过域名访问但在局域网环境\n';
+                analysis += '   推荐操作：显示切换提示\n';
+            } else if (data.is_ip_access) {
+                analysis += '💻 直接IP访问：用户已在使用局域网地址\n';
+                analysis += '   无需操作：当前访问方式最优\n';
+            } else if (!data.is_client_in_lan) {
+                analysis += '🌍 远程访问：用户不在局域网环境\n';
+                analysis += '   无需操作：只能使用域名访问\n';
+            } else {
+                analysis += '❓ 特殊情况：请检查检测逻辑\n';
+            }
+            
+            return analysis;
+        }
+        
+        // 测试直接调用检测
+        function testDirectAccess() {
+            // 这里模拟直接调用我们的智能检测函数
+            if (typeof performLANDetection === 'function') {
+                const resultDiv = document.getElementById('apiTestResult');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '🔄 正在执行直接检测...';
+                
+                try {
+                    performLANDetection();
+                    resultDiv.innerHTML = '✅ 直接检测已触发，请查看控制台和页面反应';
+                } catch (error) {
+                    resultDiv.innerHTML = `❌ 直接检测失败: ${error.message}`;
+                }
+            } else {
+                const resultDiv = document.getElementById('apiTestResult');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '❌ 检测函数未找到，请确保在主页面中运行此测试';
+            }
+        }
+        
+        // 清空结果
+        function clearResults() {
+            document.getElementById('apiTestResult').style.display = 'none';
+            document.getElementById('simulationResult').style.display = 'none';
+        }
+        
+        // 模拟域名访问
+        function simulateDomainAccess() {
+            const resultDiv = document.getElementById('simulationResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+🌐 模拟域名访问场景：
+
+假设用户通过 "example.com:9405" 访问
+✅ 域名访问 (非IP)
+✅ 客户端在局域网 (192.168.x.x)
+🎯 结果：应该显示切换提示
+
+这是最典型的需要智能提示的场景！
+            `;
+        }
+        
+        // 模拟IP访问
+        function simulateIPAccess() {
+            const resultDiv = document.getElementById('simulationResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+💻 模拟IP访问场景：
+
+假设用户通过 "192.168.1.100:9405" 访问
+✅ IP访问 (直接使用IP地址)
+✅ 客户端在局域网
+❌ 结果：不需要提示切换
+
+用户已经在使用最优的访问方式！
+            `;
+        }
+        
+        // 模拟远程访问
+        function simulateRemoteAccess() {
+            const resultDiv = document.getElementById('simulationResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+🌍 模拟远程访问场景：
+
+假设用户通过 "example.com:9405" 访问
+✅ 域名访问 (非IP)
+❌ 客户端不在局域网 (外网IP)
+❌ 结果：不需要提示切换
+
+用户在远程环境，只能使用域名访问！
+            `;
+        }
+        
+        // 显示切换提示示例
+        function showSamplePrompt() {
+            // 创建一个示例提示
+            const sampleData = {
+                current_host: 'example.com:9405',
+                client_ip: '192.168.1.105',
+                local_ip: '192.168.1.100',
+                lan_url: 'http://192.168.1.100:9405'
+            };
+            
+            if (typeof showLANSwitchPrompt === 'function') {
+                showLANSwitchPrompt(sampleData);
+            } else {
+                alert('请在主页面中运行此演示功能');
+            }
+        }
+        
+        // 执行真实检测
+        function testActualDetection() {
+            if (typeof performLANDetection === 'function') {
+                console.log('🧪 开始执行真实的智能检测...');
+                performLANDetection();
+            } else {
+                alert('请在主页面中运行真实检测功能');
+            }
+        }
+    </script>
+</body>
+</html>

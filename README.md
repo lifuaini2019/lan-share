@@ -16,8 +16,21 @@
 - 📊 **导入导出**: 支持TXT/JSON格式的数据管理
 - 🎯 **跨平台**: Windows/Linux/macOS/OpenWrt全平台支持
 - 🐳 **Docker**: 支持容器化部署
+- 🧠 **智能检测**: 自动识别局域网环境，智能提示切换访问方式
 
 ## 🚀 快速开始
+
+### 📱 一键安装（推荐）
+
+**玩客云/路由器:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/username/LAN-Share-Go/main/install_wankeyun.sh | sudo bash
+```
+
+**飞牛OS/NAS:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/username/LAN-Share-Go/main/install_flynas.sh | sudo bash
+```
 
 ### 下载运行
 

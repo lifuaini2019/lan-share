@@ -587,6 +587,19 @@ func testQRHandler(c *gin.Context) {
 	})
 }
 
+// 局域网检测测试页面
+func testLANHandler(c *gin.Context) {
+	// 读取测试页面文件
+	content, err := os.ReadFile("test_lan_detection.html")
+	if err != nil {
+		c.String(http.StatusNotFound, "测试页面不存在")
+		return
+	}
+
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	c.String(http.StatusOK, string(content))
+}
+
 func deleteMessageHandler(c *gin.Context) {
 	timestamp := c.PostForm("time")
 	if timestamp == "" {
@@ -1118,6 +1131,62 @@ func getMapKeys(m map[string]string) []string {
 	return keys
 }
 
+// 局域网检测API处理函数
+func lanCheckHandler(c *gin.Context) {
+	// 获取请求头信息
+	host := c.Request.Host
+	userAgent := c.Request.Header.Get("User-Agent")
+	referrer := c.Request.Header.Get("Referer")
+	clientIP := c.ClientIP()
+
+	// 获取本机局域网IP
+	localIP := getLocalIP()
+
+	// 判断是否为域名访问
+	hostname := host
+	if colonIndex := strings.LastIndex(host, ":"); colonIndex != -1 {
+		hostname = host[:colonIndex]
+	}
+
+	// 检查是否为IP地址访问
+	isIPAccess := net.ParseIP(hostname) != nil
+
+	// 检查客户端IP是否在局域网范围内
+	isClientInLAN := false
+	if strings.HasPrefix(clientIP, "192.168.") ||
+		strings.HasPrefix(clientIP, "10.") ||
+		strings.HasPrefix(clientIP, "172.") ||
+		clientIP == "127.0.0.1" || clientIP == "::1" {
+		isClientInLAN = true
+	}
+
+	// 生成局域网访问地址
+	lanURL := fmt.Sprintf("http://%s:%d", localIP, Port)
+
+	// 判断是否需要提示切换
+	needSwitchPrompt := false
+	if !isIPAccess && isClientInLAN {
+		// 域名访问且客户端在局域网内，需要提示
+		needSwitchPrompt = true
+	}
+
+	log.Printf("🔍 局域网检测: Host=%s, ClientIP=%s, IsIPAccess=%v, IsClientInLAN=%v, NeedPrompt=%v",
+		host, clientIP, isIPAccess, isClientInLAN, needSwitchPrompt)
+
+	c.JSON(http.StatusOK, gin.H{
+		"success":            true,
+		"current_host":       host,
+		"client_ip":          clientIP,
+		"local_ip":           localIP,
+		"is_ip_access":       isIPAccess,
+		"is_client_in_lan":   isClientInLAN,
+		"need_switch_prompt": needSwitchPrompt,
+		"lan_url":            lanURL,
+		"user_agent":         userAgent,
+		"referrer":           referrer,
+	})
+}
+
 func main() {
 	// 检查是否已有实例运行
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", Port))
@@ -1161,6 +1230,7 @@ func main() {
 	r.GET("/", indexHandler)
 	r.GET("/qr-code", qrCodeHandler)
 	r.GET("/test-qr", testQRHandler)
+	r.GET("/test-lan", testLANHandler) // 新增：局域网检测测试页面
 	r.POST("/add", addMessageHandler)
 	r.POST("/delete", deleteMessageHandler)
 	r.POST("/upload", uploadFileHandler)
@@ -1172,6 +1242,7 @@ func main() {
 	r.POST("/api/templates/category/:categoryKey", addTemplateToCategoryHandler)
 	r.GET("/api/templates/export/:formatType", exportTemplatesHandler)
 	r.POST("/api/templates/import", importTemplatesHandler)
+	r.GET("/api/lan-check", lanCheckHandler) // 新增局域网检测API
 
 	// 获取本机IP
 	localIP := getLocalIP()

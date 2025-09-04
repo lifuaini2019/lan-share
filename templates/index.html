@@ -468,6 +468,11 @@ document.addEventListener('DOMContentLoaded', function() {
     loadQRCodes();
     initializeSocket();
     loadTemplatesData();
+    
+    // 延迟执行智能局域网检测，确保页面元素加载完成
+    setTimeout(function() {
+        performLANDetection();
+    }, 1000);
 });
 
 // WebSocket 实时同步功能（带错误处理）
@@ -988,6 +993,215 @@ function toggleQR() {
         qrContent.style.display = 'none';
         toggleBtn.innerHTML = '👀 显示二维码';
     }
+}
+
+// === 智能局域网棂测功能 ===
+
+// 执行局域网棂测
+function performLANDetection() {
+    console.log('🔍 开始智能局域网棂测...');
+    
+    fetch('/api/lan-check')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ 局域网棂测结果:', data);
+            
+            if (data.success && data.need_switch_prompt) {
+                // 需要显示切换提示
+                showLANSwitchPrompt(data);
+            } else {
+                console.log('🔍 不需要显示切换提示');
+            }
+        })
+        .catch(error => {
+            console.error('❌ 局域网棂测失败:', error);
+        });
+}
+
+// 显示局域网切换提示
+function showLANSwitchPrompt(detectionData) {
+    // 检查是否已经在显示提示，避免重复
+    if (document.getElementById('lanSwitchModal')) {
+        console.log('⚠️ 局域网切换提示已存在，跳过');
+        return;
+    }
+    
+    console.log('🔔 显示局域网切换提示');
+    
+    const modal = document.createElement('div');
+    modal.id = 'lanSwitchModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        backdrop-filter: blur(2px);
+    `;
+    
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 30px;
+        max-width: 450px;
+        width: 90%;
+        color: white;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9);
+        animation: popIn 0.3s ease-out forwards;
+    `;
+    
+    // 添加动画样式
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes popIn {
+            to {
+                transform: scale(1);
+            }
+        }
+        .lan-switch-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        .lan-switch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        .lan-cancel-btn {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        .lan-cancel-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    dialog.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🏠</div>
+            <h2 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600;">检测到您在局域网环境</h2>
+            <p style="margin: 0; font-size: 16px; line-height: 1.5; opacity: 0.9;">
+                您正在通过域名访问，但实际在局域网环境中。<br>
+                是否切换到局域网地址以获得更快的访问速度？
+            </p>
+        </div>
+        
+        <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 16px; margin: 20px 0; text-align: left;">
+            <div style="margin-bottom: 8px;">
+                <strong>🌐 当前访问：</strong> ${detectionData.current_host}
+            </div>
+            <div style="margin-bottom: 8px;">
+                <strong>🏠 局域网地址：</strong> ${detectionData.lan_url}
+            </div>
+            <div>
+                <strong>📶 您的IP：</strong> ${detectionData.client_ip}
+            </div>
+        </div>
+        
+        <div style="margin-top: 25px;">
+            <button class="lan-switch-btn" onclick="switchToLAN('${detectionData.lan_url}')">
+                🚀 切换到局域网
+            </button>
+            <button class="lan-cancel-btn" onclick="closeLANSwitchModal()">
+                🙅 继续使用域名
+            </button>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 13px; opacity: 0.7;">
+            💡 局域网访问速度更快，且数据不经过公网
+        </div>
+    `;
+    
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+    
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeLANSwitchModal();
+        }
+    });
+}
+
+// 切换到局域网地址
+function switchToLAN(lanURL) {
+    console.log('🚀 切换到局域网:', lanURL);
+    
+    // 显示加载提示
+    const modal = document.getElementById('lanSwitchModal');
+    if (modal) {
+        const dialog = modal.querySelector('div');
+        dialog.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔄</div>
+                <h2 style="margin: 0 0 16px 0; color: white;">正在切换...</h2>
+                <p style="margin: 0; color: rgba(255, 255, 255, 0.8);">请稍候，正在跳转到局域网地址</p>
+            </div>
+        `;
+    }
+    
+    // 1秒后跳转
+    setTimeout(function() {
+        window.location.href = lanURL;
+    }, 1000);
+}
+
+// 关闭局域网切换提示
+function closeLANSwitchModal() {
+    const modal = document.getElementById('lanSwitchModal');
+    if (modal) {
+        modal.style.animation = 'fadeOut 0.3s ease-out forwards';
+        
+        // 添加淡出动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                to {
+                    opacity: 0;
+                    transform: scale(0.9);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+    
+    console.log('🙅 用户选择继续使用域名访问');
 }
 
 // 页面加载完成后初始化
