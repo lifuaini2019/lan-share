@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版智能检测调试工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .debug-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .debug-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .debug-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #27ae60, #219653);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+        
+        .log-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .status-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        h1, h2 {
+            margin-top: 0;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .success-box {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .error-box {
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .warning-box {
+            border-left: 4px solid #f39c12;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        .step {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .step.active {
+            background: rgba(52, 152, 219, 0.3);
+            border: 2px solid #3498db;
+        }
+        
+        .step.completed {
+            background: rgba(39, 174, 96, 0.3);
+            border: 2px solid #27ae60;
+        }
+        
+        .ip-input {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            margin: 8px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 增强版智能检测调试工具 v1.0.8</h1>
+    
+    <div class="debug-card">
+        <h2>📍 当前访问信息</h2>
+        <div class="status-info">
+            <div><strong>🌐 当前URL:</strong> <span id="currentURL">加载中...</span></div>
+            <div><strong>🏠 当前主机(Host):</strong> <span id="currentHost">加载中...</span></div>
+            <div><strong>📊 协议:</strong> <span id="currentProtocol">加载中...</span></div>
+            <div><strong>🚪 端口:</strong> <span id="currentPort">加载中...</span></div>
+        </div>
+    </div>
+    
+    <div class="debug-card">
+        <h2>🔧 调试工具</h2>
+        <div class="result-box">
+            <h3>API调用测试</h3>
+            <button class="debug-btn" onclick="testAPICall()">📡 测试局域网检测API</button>
+            
+            <h3>手动IP测试</h3>
+            <input type="text" id="manualIP" class="ip-input" placeholder="输入IP地址，例如：192.168.3.100">
+            <button class="test-btn" onclick="testManualIP()">🧪 测试指定IP</button>
+            
+            <h3>强制显示测试</h3>
+            <button class="test-btn" onclick="forceShowPrompt()">🔔 强制显示提示框</button>
+            
+            <h3>调试操作</h3>
+            <button class="debug-btn" onclick="showAllFunctions()">📋 显示所有函数</button>
+            <button class="clear-btn" onclick="clearLog()">🧹 清空日志</button>
+        </div>
+    </div>
+    
+    <div class="debug-card">
+        <h2>📋 详细调试日志</h2>
+        <div id="logArea" class="log-area">等待执行调试...\n</div>
+    </div>
+    
+    <div class="debug-card">
+        <h2>📊 调试结果分析</h2>
+        <div id="analysisResult" class="log-area">尚未执行调试...\n</div>
+    </div>
+    
+    <div class="debug-card">
+        <h2>📋 详细请求头信息</h2>
+        <table id="headersTable">
+            <thead>
+                <tr>
+                    <th>请求头</th>
+                    <th>值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2">等待执行调试...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 更新页面信息
+        function updatePageInfo() {
+            document.getElementById('currentURL').textContent = window.location.href;
+            document.getElementById('currentHost').textContent = window.location.host;
+            document.getElementById('currentProtocol').textContent = window.location.protocol;
+            document.getElementById('currentPort').textContent = window.location.port || '默认端口';
+        }
+        
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let typeClass = '';
+            switch(type) {
+                case 'success':
+                    typeClass = '✅ ';
+                    break;
+                case 'error':
+                    typeClass = '❌ ';
+                    break;
+                case 'warning':
+                    typeClass = '⚠️ ';
+                    break;
+                case 'info':
+                    typeClass = 'ℹ️ ';
+                    break;
+                default:
+                    typeClass = '🔍 ';
+            }
+            
+            logArea.textContent += `[${timestamp}] ${typeClass}${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        // 清空日志
+        function clearLog() {
+            document.getElementById('logArea').textContent = '';
+            document.getElementById('analysisResult').textContent = '等待执行调试...\n';
+            document.querySelector('#headersTable tbody').innerHTML = '<tr><td colspan="2">等待执行调试...</td></tr>';
+        }
+        
+        // 测试API调用
+        function testAPICall() {
+            addLog('📡 开始测试局域网检测API...', 'info');
+            
+            fetch('/api/lan-check')
+                .then(response => {
+                    addLog(`📡 API响应状态: ${response.status}`, response.ok ? 'success' : 'error');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    addLog('✅ 局域网检测API调用成功', 'success');
+                    addLog('📊 API返回数据:', 'info');
+                    addLog(JSON.stringify(data, null, 2), 'info');
+                    
+                    // 显示详细分析结果
+                    showDetailedAnalysis(data);
+                })
+                .catch(error => {
+                    addLog(`❌ 局域网检测API调用失败: ${error.message}`, 'error');
+                    addLog('🔧 可能的原因:', 'warning');
+                    addLog('   1. 后端服务未启动', 'warning');
+                    addLog('   2. 网络连接问题', 'warning');
+                    addLog('   3. API路径错误', 'warning');
+                });
+        }
+        
+        // 测试手动IP
+        function testManualIP() {
+            const ip = document.getElementById('manualIP').value.trim();
+            if (!ip) {
+                alert('请输入IP地址');
+                return;
+            }
+            
+            addLog(`🧪 开始测试手动IP: ${ip}`, 'info');
+            
+            // 模拟API返回数据
+            const mockData = {
+                success: true,
+                current_host: window.location.host,
+                client_ip: ip,
+                local_ip: '192.168.3.147',
+                is_ip_access: false,
+                is_client_in_lan: isLANIP(ip),
+                need_switch_prompt: !isIPAccess() && isLANIP(ip),
+                lan_url: 'http://192.168.3.147:9405',
+                user_agent: navigator.userAgent,
+                referrer: ''
+            };
+            
+            addLog('📊 模拟数据:', 'info');
+            addLog(JSON.stringify(mockData, null, 2), 'info');
+            
+            // 显示详细分析结果
+            showDetailedAnalysis(mockData);
+        }
+        
+        // 检查是否为局域网IP
+        function isLANIP(ip) {
+            // 处理IPv6回环地址
+            if (ip === '::1') {
+                return true;
+            }
+            
+            // 处理IPv4地址
+            const ipParts = ip.split('.');
+            if (ipParts.length !== 4) {
+                return false;
+            }
+            
+            const firstPart = parseInt(ipParts[0]);
+            const secondPart = parseInt(ipParts[1]);
+            
+            // 192.168.x.x
+            if (firstPart === 192 && secondPart === 168) {
+                return true;
+            }
+            // 10.x.x.x
+            if (firstPart === 10) {
+                return true;
+            }
+            // 172.16-31.x.x
+            if (firstPart === 172 && secondPart >= 16 && secondPart <= 31) {
+                return true;
+            }
+            // 回环地址
+            if (ip === '127.0.0.1') {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // 检查是否为IP访问
+        function isIPAccess() {
+            const host = window.location.host;
+            const hostname = host.split(':')[0];
+            return /^(\d{1,3}\.){3}\d{1,3}/.test(hostname);
+        }
+        
+        // 显示局域网切换提示
+        function showLANSwitchPrompt(detectionData) {
+            console.log('📢 showLANSwitchPrompt 被调用，数据:', detectionData);
+            
+            // 检查是否已经在显示提示，避免重复
+            const existingModal = document.getElementById('lanSwitchModal');
+            if (existingModal) {
+                console.log('⚠️ 局域网切换提示已存在，跳过');
+                console.log('🔧 现有提示框:', existingModal);
+                console.log('🔧 现有提示框样式:', existingModal.style);
+                console.log('🔧 现有提示框显示状态:', getComputedStyle(existingModal).display);
+                return;
+            }
+            
+            console.log('🔔 开始创建局域网切换提示框');
+            
+            // 显示通知
+            if (typeof showNotification === 'function') {
+                showNotification('检测到局域网环境，准备显示切换提示...', 'info');
+            }
+            
+            // 确保DOM已准备好
+            console.log('📄 DOM准备状态检查:');
+            console.log('  - document.readyState:', document.readyState);
+            console.log('  - document.body存在:', !!document.body);
+            
+            if (document.readyState !== 'complete' && document.readyState !== 'interactive') {
+                console.log('⏳ DOM未准备好，等待加载完成...');
+                window.addEventListener('load', () => {
+                    console.log('✅ window.load事件触发');
+                    createLANSwitchModal(detectionData);
+                }, {once: true});
+                
+                document.addEventListener('DOMContentLoaded', () => {
+                    console.log('✅ DOMContentLoaded事件触发');
+                    createLANSwitchModal(detectionData);
+                }, {once: true});
+            } else {
+                console.log('✅ DOM已准备好，直接创建提示框');
+                createLANSwitchModal(detectionData);
+            }
+        }
+
+        // 创建局域网切换提示模态框
+        function createLANSwitchModal(detectionData) {
+            console.log('🔨 开始创建局域网切换提示模态框');
+            console.log('📊 接收到的数据:', detectionData);
+            
+            // 再次检查是否已存在
+            const existingModal = document.getElementById('lanSwitchModal');
+            if (existingModal) {
+                console.log('⚠️ 局域网切换提示已存在，跳过');
+                return;
+            }
+            
+            // 确保body元素存在
+            console.log('📄 body元素检查:');
+            console.log('  - document.body存在:', !!document.body);
+            if (document.body) {
+                console.log('  - document.body.style.display:', document.body.style.display);
+            }
+            
+            if (!document.body) {
+                console.log('⏳ body元素未准备好，等待DOM加载完成...');
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        console.log('✅ DOMContentLoaded事件触发，重新创建提示框');
+                        createLANSwitchModal(detectionData);
+                    }, {once: true});
+                } else {
+                    console.log('⏰ 延迟100ms后重试...');
+                    setTimeout(() => {
+                        createLANSwitchModal(detectionData);
+                    }, 100);
+                }
+                return;
+            }
+            
+            // 强制确保body存在并可见
+            if (!document.body || document.body.style.display === 'none') {
+                console.log('🔧 确保body元素可见...');
+                document.body.style.display = 'block';
+            }
+            
+            console.log('🔧 开始创建DOM元素...');
+            
+            const modal = document.createElement('div');
+            modal.id = 'lanSwitchModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                backdrop-filter: blur(2px);
+                animation: fadeIn 0.3s ease-out;
+            `;
+            
+            console.log('🔧 modal元素创建完成:', modal);
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 30px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                transform: translateY(20px);
+                animation: slideUp 0.3s ease-out forwards;
+                text-align: center;
+            `;
+            
+            modalContent.innerHTML = `
+                <h2 style="margin-top: 0; color: #2c3e50;">🚀 检测到局域网环境</h2>
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    检测到您正在局域网环境中访问，为了获得更快的访问速度，
+                    建议切换到局域网地址：
+                </p>
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                    <strong style="font-size: 18px; color: #2c3e50;">${detectionData.lan_url}</strong>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="switchToLAN('${detectionData.lan_url}')" style="
+                        background: #3498db;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 16px;
+                        font-weight: 500;
+                        transition: all 0.2s;
+                    ">立即切换</button>
+                    <button onclick="closeLANSwitchModal()" style="
+                        background: #ecf0f1;
+                        color: #2c3e50;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 16px;
+                        font-weight: 500;
+                        transition: all 0.2s;
+                    ">稍后再说</button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            console.log('✅ 局域网切换提示框创建完成');
+            addLog('✅ 局域网切换提示框已显示', 'success');
+        }
+
+        // 切换到局域网地址
+        function switchToLAN(lanURL) {
+            addLog(`🔄 正在切换到局域网地址: ${lanURL}`, 'info');
+            console.log('🔄 切换到局域网地址:', lanURL);
+            
+            // 关闭提示框
+            closeLANSwitchModal();
+            
+            // 跳转到局域网地址
+            setTimeout(() => {
+                window.location.href = lanURL;
+            }, 500);
+        }
+
+        // 关闭局域网切换提示框
+        function closeLANSwitchModal() {
+            const modal = document.getElementById('lanSwitchModal');
+            if (modal) {
+                modal.remove();
+                console.log('🧹 局域网切换提示框已关闭');
+                addLog('🧹 局域网切换提示框已关闭', 'info');
+            }
+        }
+        
+        // 强制显示提示框
+        function forceShowPrompt() {
+            addLog('🔔 强制显示局域网切换提示...', 'info');
+            
+            // 检查相关函数是否存在
+            addLog('🔍 检查相关函数是否存在...', 'info');
+            
+            if (typeof showLANSwitchPrompt === 'function') {
+                addLog('✅ showLANSwitchPrompt 函数存在', 'success');
+            } else {
+                addLog('❌ showLANSwitchPrompt 函数不存在', 'error');
+            }
+            
+            if (typeof createLANSwitchModal === 'function') {
+                addLog('✅ createLANSwitchModal 函数存在', 'success');
+            } else {
+                addLog('❌ createLANSwitchModal 函数不存在', 'error');
+            }
+            
+            // 模拟API返回数据
+            const mockData = {
+                success: true,
+                current_host: window.location.host,
+                client_ip: '192.168.3.100',
+                local_ip: '192.168.3.147',
+                is_ip_access: false,
+                is_client_in_lan: true,
+                need_switch_prompt: true,
+                lan_url: 'http://192.168.3.147:9405',
+                user_agent: navigator.userAgent,
+                referrer: '',
+                force_prompt: true
+            };
+            
+            addLog('🔧 使用模拟数据测试提示显示...', 'info');
+            
+            try {
+                // 尝试调用显示函数
+                if (typeof showLANSwitchPrompt === 'function') {
+                    showLANSwitchPrompt(mockData);
+                    addLog('✅ 成功调用 showLANSwitchPrompt 函数', 'success');
+                } else if (typeof createLANSwitchModal === 'function') {
+                    createLANSwitchModal(mockData);
+                    addLog('✅ 成功调用 createLANSwitchModal 函数', 'success');
+                } else {
+                    addLog('❌ 未找到显示提示的相关函数', 'error');
+                    addLog('💡 请确保在主页中测试此功能', 'warning');
+                    return;
+                }
+                
+                // 检查提示框是否创建成功
+                setTimeout(() => {
+                    const modal = document.getElementById('lanSwitchModal');
+                    if (modal) {
+                        addLog('✅ 提示框已成功创建并添加到页面', 'success');
+                        addLog('💡 如果未看到提示框，请检查CSS样式或z-index设置', 'warning');
+                    } else {
+                        addLog('❌ 提示框未创建成功', 'error');
+                        addLog('🔧 可能的原因:', 'warning');
+                        addLog('   1. DOM元素未正确添加', 'warning');
+                        addLog('   2. CSS样式问题', 'warning');
+                        addLog('   3. JavaScript执行异常', 'warning');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                addLog(`❌ 调用显示函数时发生错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 显示所有函数
+        function showAllFunctions() {
+            addLog('📋 检查页面中的所有函数...', 'info');
+            
+            const functions = [
+                'performLANDetection',
+                'showLANSwitchPrompt',
+                'createLANSwitchModal',
+                'isLANIP',
+                'isIPAccess',
+                'forceShowPrompt',
+                'testAPICall',
+                'testManualIP'
+            ];
+            
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    addLog(`✅ ${funcName}: 函数存在`, 'success');
+                } else {
+                    addLog(`❌ ${funcName}: 函数不存在`, 'error');
+                }
+            });
+        }
+        
+        // 显示详细分析结果
+        function showDetailedAnalysis(data) {
+            let analysis = "🔍 详细分析结果:\n\n";
+            
+            // 检查是否为域名访问
+            if (data.is_ip_access) {
+                analysis += "❌ 问题1: 当前是通过IP地址访问，不是域名访问\n";
+                analysis += "   解决方案: 请通过域名访问\n\n";
+            } else {
+                analysis += "✅ 检查1: 当前是通过域名访问\n\n";
+            }
+            
+            // 检查客户端是否在局域网
+            if (!data.is_client_in_lan) {
+                analysis += "❌ 问题2: 客户端不在局域网环境\n";
+                analysis += `   当前客户端IP: ${data.client_ip}\n`;
+                analysis += "   解决方案: 请确保在局域网环境中访问\n\n";
+            } else {
+                analysis += "✅ 检查2: 客户端在局域网环境\n\n";
+            }
+            
+            // 检查是否需要提示
+            if (data.need_switch_prompt) {
+                analysis += "✅ 检查3: 满足显示提示的所有条件\n";
+                analysis += "   应该显示智能切换提示\n\n";
+            } else {
+                analysis += "❌ 问题3: 不满足显示提示的条件\n";
+                if (!data.is_ip_access && data.is_client_in_lan && !data.need_switch_prompt) {
+                    analysis += "   可能是局域网地址测试失败\n";
+                    analysis += `   局域网地址: ${data.lan_url}\n`;
+                    analysis += `   本机IP: ${data.local_ip}\n\n`;
+                }
+            }
+            
+            // 检查本机IP是否正确
+            if (data.local_ip === "127.0.0.1" || data.local_ip === "::1") {
+                analysis += "⚠️ 警告: 本机IP为回环地址\n";
+                analysis += "   这可能导致局域网地址测试失败\n\n";
+            }
+            
+            analysis += "📋 建议操作:\n";
+            analysis += "1. 检查浏览器控制台是否有JavaScript错误\n";
+            analysis += "2. 确认通过域名访问\n";
+            analysis += "3. 确保在局域网环境中访问\n";
+            analysis += "4. 如果仍有问题，请联系技术支持\n";
+            
+            document.getElementById('analysisResult').textContent = analysis;
+            
+            // 显示请求头信息
+            displayRequestHeaders();
+        }
+        
+        // 显示请求头信息
+        function displayRequestHeaders() {
+            const headers = {
+                'Host': window.location.host,
+                'Origin': window.location.origin,
+                'User-Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Language': navigator.language,
+                'Online': navigator.onLine,
+                'Cookies': document.cookie || '无'
+            };
+            
+            const tbody = document.querySelector('#headersTable tbody');
+            tbody.innerHTML = '';
+            
+            for (const [key, value] of Object.entries(headers)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td><strong>${key}</strong></td><td>${value}</td>`;
+                tbody.appendChild(row);
+            }
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePageInfo();
+            addLog('📄 增强版智能检测调试工具加载完成', 'success');
+            addLog('💡 请点击上方按钮进行测试', 'info');
+        });
+    </script>
+</body>
+</html>

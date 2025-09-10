@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能局域网检测功能说明</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .help-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        
+        .feature-list {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-item {
+            margin: 15px 0;
+            padding-left: 20px;
+            border-left: 3px solid #fff;
+        }
+        
+        .example-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .tip-box {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .warning-box {
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ff0000;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 智能局域网检测功能说明</h1>
+    
+    <div class="help-card">
+        <h2>🎯 功能概述</h2>
+        <p>智能局域网检测功能可以自动识别用户的访问方式和网络环境，当用户在局域网环境中通过域名访问时，会自动提示切换到局域网地址以获得更快的访问速度。</p>
+        
+        <div class="feature-list">
+            <div class="feature-item">
+                <strong>自动检测访问方式</strong> - 智能区分域名访问和IP地址访问
+            </div>
+            <div class="feature-item">
+                <strong>智能识别网络环境</strong> - 自动判断客户端是否在局域网环境中
+            </div>
+            <div class="feature-item">
+                <strong>一键切换提示</strong> - 当满足条件时自动显示切换提示
+            </div>
+            <div class="feature-item">
+                <strong>通用域名支持</strong> - 适用于任何自定义域名
+            </div>
+        </div>
+    </div>
+    
+    <div class="help-card">
+        <h2>⚙️ 工作原理</h2>
+        <p>智能检测功能通过以下步骤工作：</p>
+        
+        <h3>1. 访问方式检测</h3>
+        <div class="example-box">
+            // 检测访问方式示例
+            域名访问: http://your-domain.com → 显示提示
+            IP访问: http://192.168.1.100:9405 → 不显示提示
+        </div>
+        
+        <h3>2. 网络环境识别</h3>
+        <div class="example-box">
+            // 客户端IP识别示例
+            局域网IP: 192.168.x.x, 10.x.x.x, 172.16-31.x.x → 识别为局域网
+            公网IP: 8.8.8.8, 114.114.114.114 → 识别为公网
+        </div>
+        
+        <h3>3. 智能提示条件</h3>
+        <div class="example-box">
+            // 显示提示的条件
+            域名访问 + 局域网环境 = 显示提示
+            IP访问 + 任何环境 = 不显示提示
+            域名访问 + 公网环境 = 不显示提示
+        </div>
+    </div>
+    
+    <div class="help-card">
+        <h2>🌐 适用场景</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>使用场景</th>
+                    <th>域名访问</th>
+                    <th>客户端环境</th>
+                    <th>是否提示</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>家庭网络</td>
+                    <td>✅ 是</td>
+                    <td>✅ 局域网</td>
+                    <td>🔔 显示</td>
+                </tr>
+                <tr>
+                    <td>办公室网络</td>
+                    <td>✅ 是</td>
+                    <td>✅ 局域网</td>
+                    <td>🔔 显示</td>
+                </tr>
+                <tr>
+                    <td>外网访问</td>
+                    <td>✅ 是</td>
+                    <td>❌ 公网</td>
+                    <td>❌ 不显示</td>
+                </tr>
+                <tr>
+                    <td>直接IP访问</td>
+                    <td>❌ 否</td>
+                    <td>✅ 局域网</td>
+                    <td>❌ 不显示</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="help-card">
+        <h2>🔧 自定义域名配置</h2>
+        <p>智能检测功能适用于任何自定义域名，只需完成以下配置：</p>
+        
+        <h3>1. 域名解析设置</h3>
+        <div class="example-box">
+            # 在DNS服务商处添加A记录
+            记录类型: A
+            主机记录: your-domain (或 @)
+            记录值: 你的服务器IP地址
+            # 例如:
+            your-domain.com → 192.168.1.100
+        </div>
+        
+        <h3>2. 反向代理配置（可选）</h3>
+        <div class="example-box">
+            # Nginx配置示例
+            server {
+                listen 80;
+                server_name your-domain.com;
+                
+                location / {
+                    proxy_pass http://127.0.0.1:9405;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                }
+            }
+        </div>
+    </div>
+    
+    <div class="help-card">
+        <h2>🧪 测试方法</h2>
+        
+        <h3>正常测试</h3>
+        <div class="example-box">
+            1. 配置你的域名解析到服务器IP
+            2. 通过域名访问: http://your-domain.com
+            3. 确保在局域网环境中访问
+            4. 应该会看到切换提示
+        </div>
+        
+        <h3>强制测试</h3>
+        <div class="example-box">
+            # 强制显示提示框
+            访问: http://your-domain.com?force_prompt=true
+            
+            # 或在浏览器控制台执行
+            forceShowLANSwitchPrompt()
+        </div>
+        
+        <h3>API测试</h3>
+        <div class="example-box">
+            # 测试API接口
+            GET http://your-server-ip:9405/api/lan-check
+            GET http://your-server-ip:9405/api/lan-check?force_prompt=true
+        </div>
+    </div>
+    
+    <div class="help-card">
+        <h2>💡 使用技巧</h2>
+        
+        <div class="tip-box">
+            <strong>💡 提示:</strong> 智能检测功能对所有域名都有效，不仅限于特定域名。只要满足"域名访问+局域网环境"的条件就会显示提示。
+        </div>
+        
+        <div class="tip-box">
+            <strong>💡 提示:</strong> 如果没有看到提示，请检查是否满足两个条件：1) 通过域名访问 2) 客户端在局域网环境中。
+        </div>
+        
+        <div class="tip-box">
+            <strong>💡 提示:</strong> 可以通过添加 ?force_prompt=true 参数来强制显示提示框，便于测试和演示。
+        </div>
+    </div>
+    
+    <div class="help-card">
+        <h2>⚠️ 常见问题</h2>
+        
+        <div class="warning-box">
+            <strong>⚠️ 问题:</strong> 通过域名访问但没有显示提示
+            <br><strong>🔧 解决方案:</strong> 检查客户端IP是否被正确识别为局域网IP，可能需要配置反向代理的头部信息。
+        </div>
+        
+        <div class="warning-box">
+            <strong>⚠️ 问题:</strong> 提示框显示但局域网地址无法访问
+            <br><strong>🔧 解决方案:</strong> 检查防火墙设置和端口是否正确开放。
+        </div>
+        
+        <div class="warning-box">
+            <strong>⚠️ 问题:</strong> 外网访问时也显示提示
+            <br><strong>🔧 解决方案:</strong> 检查客户端IP识别逻辑，确保公网IP不被误识别为局域网IP。
+        </div>
+    </div>
+    
+    <div class="help-card">
+        <h2>📞 技术支持</h2>
+        <p>如果遇到任何问题，请提供以下信息以便快速解决：</p>
+        <ul>
+            <li>访问的域名和URL</li>
+            <li>客户端IP地址</li>
+            <li>服务器IP地址</li>
+            <li>浏览器控制台日志</li>
+            <li>服务器端日志</li>
+        </ul>
+    </div>
+</body>
+</html>

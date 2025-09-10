@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>域名访问测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .log-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .status-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        h1, h2 {
+            margin-top: 0;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .error-box {
+            border-left: 4px solid #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 域名访问测试页面 v1.0.15</h1>
+    
+    <div class="test-card">
+        <h2>📍 当前访问信息</h2>
+        <div class="status-info">
+            <div><strong>🌐 当前URL:</strong> <span id="currentURL"></span></div>
+            <div><strong>🏠 当前主机:</strong> <span id="currentHost"></span></div>
+            <div><strong>📊 协议:</strong> <span id="currentProtocol"></span></div>
+            <div><strong>🚪 端口:</strong> <span id="currentPort"></span></div>
+        </div>
+        
+        <button class="test-btn" onclick="testDomainAccess()">🧪 测试域名访问</button>
+        <button class="test-btn" onclick="testLanDetection()">📡 测试局域网检测</button>
+        <button class="test-btn" onclick="forceLanPrompt()">🔔 强制显示局域网提示</button>
+        <button class="clear-btn" onclick="clearLog()">🧹 清空日志</button>
+    </div>
+    
+    <div class="test-card">
+        <h2>📋 测试日志</h2>
+        <div id="logArea" class="log-area">等待执行测试...\n</div>
+    </div>
+    
+    <div class="test-card">
+        <h2>💡 使用说明</h2>
+        <div class="result-box">
+            <h3>域名访问测试</h3>
+            <p>此页面用于测试域名访问时的智能检测功能。</p>
+            
+            <h3>测试步骤</h3>
+            <ol>
+                <li>通过域名访问此页面: http://2lan.lifu.eu.org/test-domain</li>
+                <li>点击"测试域名访问"按钮</li>
+                <li>点击"测试局域网检测"按钮</li>
+                <li>观察是否显示局域网切换提示</li>
+            </ol>
+            
+            <h3>调试方法</h3>
+            <ul>
+                <li>打开浏览器控制台(F12)查看详细日志</li>
+                <li>检查Network标签页中/api/lan-check请求的响应</li>
+                <li>使用"强制显示局域网提示"按钮测试提示框显示</li>
+            </ul>
+            
+            <h3>预期结果</h3>
+            <p>通过域名访问时应该显示局域网切换提示，提示您切换到局域网地址以获得更快的访问速度。</p>
+        </div>
+    </div>
+
+    <script>
+        // 更新页面信息
+        function updatePageInfo() {
+            document.getElementById('currentURL').textContent = window.location.href;
+            document.getElementById('currentHost').textContent = window.location.host;
+            document.getElementById('currentProtocol').textContent = window.location.protocol;
+            document.getElementById('currentPort').textContent = window.location.port || '默认端口';
+        }
+        
+        // 添加日志
+        function addLog(message) {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.textContent += `[${timestamp}] ${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        // 清空日志
+        function clearLog() {
+            document.getElementById('logArea').textContent = '';
+        }
+        
+        // 测试域名访问
+        function testDomainAccess() {
+            addLog('🚀 开始测试域名访问...');
+            addLog(`🌐 当前访问地址: ${window.location.href}`);
+            addLog(`🏠 当前主机: ${window.location.host}`);
+            
+            const hostname = window.location.host.split(':')[0];
+            const isIP = /^(\d{1,3}\.){3}\d{1,3}/.test(hostname);
+            
+            if (isIP) {
+                addLog('❌ 当前通过IP地址访问，不是域名访问');
+            } else {
+                addLog('✅ 当前通过域名访问');
+                addLog('💡 这是智能检测功能的目标场景');
+            }
+        }
+        
+        // 测试局域网检测
+        function testLanDetection() {
+            addLog('📡 开始测试局域网检测...');
+            
+            // 调用局域网检测API
+            fetch('/api/lan-check')
+                .then(response => {
+                    addLog(`📡 API响应状态: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    addLog('✅ 局域网检测API调用成功');
+                    addLog('📊 检测结果:');
+                    addLog(`  - 当前主机: ${data.current_host}`);
+                    addLog(`  - 客户端IP: ${data.client_ip}`);
+                    addLog(`  - 是否IP访问: ${data.is_ip_access}`);
+                    addLog(`  - 客户端在局域网: ${data.is_client_in_lan}`);
+                    addLog(`  - 需要提示切换: ${data.need_switch_prompt}`);
+                    addLog(`  - 局域网地址: ${data.lan_url}`);
+                    
+                    if (data.need_switch_prompt) {
+                        addLog('🔔 满足显示提示条件！');
+                        addLog('💡 应该显示局域网切换提示');
+                    } else {
+                        addLog('🔍 不满足显示提示条件');
+                        if (data.is_ip_access) {
+                            addLog('   原因: 通过IP地址访问');
+                        }
+                        if (!data.is_client_in_lan) {
+                            addLog('   原因: 客户端不在局域网');
+                        }
+                    }
+                })
+                .catch(error => {
+                    addLog(`❌ 局域网检测API调用失败: ${error.message}`);
+                });
+        }
+        
+        // 强制显示局域网提示
+        function forceLanPrompt() {
+            addLog('🔔 强制显示局域网提示...');
+            
+            // 模拟API返回数据
+            const mockData = {
+                success: true,
+                current_host: window.location.host,
+                client_ip: '192.168.3.100',
+                local_ip: '192.168.3.147',
+                is_ip_access: false,
+                is_client_in_lan: true,
+                need_switch_prompt: true,
+                lan_url: 'http://192.168.3.147:9405',
+                user_agent: navigator.userAgent,
+                referrer: ''
+            };
+            
+            // 尝试调用显示提示函数
+            if (typeof showLANSwitchPrompt === 'function') {
+                showLANSwitchPrompt(mockData);
+                addLog('✅ 成功调用showLANSwitchPrompt函数');
+            } else if (typeof createLANSwitchModal === 'function') {
+                createLANSwitchModal(mockData);
+                addLog('✅ 成功调用createLANSwitchModal函数');
+            } else {
+                addLog('❌ 未找到显示提示的函数');
+                addLog('💡 请确保在主页中测试此功能');
+            }
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePageInfo();
+            addLog('📄 域名访问测试页面加载完成');
+            addLog('💡 请点击上方按钮进行测试');
+        });
+    </script>
+</body>
+</html>

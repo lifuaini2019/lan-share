@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>局域网检测深度调试工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .debug-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .debug-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .debug-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #27ae60, #219653);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+        
+        .log-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .status-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        h1, h2 {
+            margin-top: 0;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .success-box {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .error-box {
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .warning-box {
+            border-left: 4px solid #f39c12;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        .step {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .step.active {
+            background: rgba(52, 152, 219, 0.3);
+            border: 2px solid #3498db;
+        }
+        
+        .step.completed {
+            background: rgba(39, 174, 96, 0.3);
+            border: 2px solid #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 局域网检测深度调试工具 v1.0.8</h1>
+    
+    <div class="debug-card">
+        <h2>📍 当前访问信息</h2>
+        <div class="status-info">
+            <div><strong>🌐 当前URL:</strong> <span id="currentURL">加载中...</span></div>
+            <div><strong>🏠 当前主机(Host):</strong> <span id="currentHost">加载中...</span></div>
+            <div><strong>📊 协议:</strong> <span id="currentProtocol">加载中...</span></div>
+            <div><strong>🚪 端口:</strong> <span id="currentPort">加载中...</span></div>
+        </div>
+    </div>
+    
+    <div class="debug-card">
+        <h2>📋 调试步骤</h2>
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div>1</div>
+                <div>访问方式检测</div>
+            </div>
+            <div class="step" id="step2">
+                <div>2</div>
+                <div>API调用测试</div>
+            </div>
+            <div class="step" id="step3">
+                <div>3</div>
+                <div>条件分析</div>
+            </div>
+            <div class="step" id="step4">
+                <div>4</div>
+                <div>提示显示</div>
+            </div>
+        </div>
+        
+        <button class="debug-btn" onclick="step1_DetectAccessMethod()">🔬 步骤1: 检测访问方式</button>
+        <button class="debug-btn" onclick="step2_TestAPICall()">📡 步骤2: 测试API调用</button>
+        <button class="debug-btn" onclick="step3_AnalyzeConditions()">📊 步骤3: 分析显示条件</button>
+        <button class="test-btn" onclick="step4_TestPromptDisplay()">🔔 步骤4: 测试提示显示</button>
+        <button class="clear-btn" onclick="clearLog()">🧹 清空日志</button>
+    </div>
+    
+    <div class="debug-card">
+        <h2>📋 详细调试日志</h2>
+        <div id="logArea" class="log-area">等待执行调试...\n</div>
+    </div>
+    
+    <div class="debug-card">
+        <h2>📊 调试结果分析</h2>
+        <div id="analysisResult" class="log-area">尚未执行调试...\n</div>
+    </div>
+    
+    <div class="debug-card">
+        <h2>📋 详细请求头信息</h2>
+        <table id="headersTable">
+            <thead>
+                <tr>
+                    <th>请求头</th>
+                    <th>值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2">等待执行调试...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="debug-card">
+        <h2>💡 常见问题排查</h2>
+        <div class="result-box">
+            <h3>如果仍然不显示提示，请检查：</h3>
+            <ol>
+                <li><strong>浏览器控制台错误</strong>：按F12打开开发者工具，查看Console是否有JavaScript错误</li>
+                <li><strong>网络请求</strong>：在Network标签页查看/api/lan-check请求是否成功</li>
+                <li><strong>CSS样式问题</strong>：检查提示框元素是否被隐藏或样式异常</li>
+                <li><strong>DOM加载时机</strong>：确保JavaScript在DOM加载完成后执行</li>
+                <li><strong>浏览器兼容性</strong>：尝试使用不同浏览器测试</li>
+            </ol>
+            
+            <h3>手动测试方法：</h3>
+            <p>在浏览器控制台执行以下代码：</p>
+            <pre><code>// 1. 测试API调用
+fetch('/api/lan-check').then(r => r.json()).then(console.log)
+
+// 2. 强制显示提示框
+const mockData = {
+    success: true,
+    current_host: window.location.host,
+    client_ip: '192.168.3.100',
+    local_ip: '192.168.3.147',
+    is_ip_access: false,
+    is_client_in_lan: true,
+    need_switch_prompt: true,
+    lan_url: 'http://192.168.3.147:9405',
+    user_agent: navigator.userAgent,
+    referrer: ''
+};
+showLANSwitchPrompt(mockData);</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // 更新页面信息
+        function updatePageInfo() {
+            document.getElementById('currentURL').textContent = window.location.href;
+            document.getElementById('currentHost').textContent = window.location.host;
+            document.getElementById('currentProtocol').textContent = window.location.protocol;
+            document.getElementById('currentPort').textContent = window.location.port || '默认端口';
+        }
+        
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let typeClass = '';
+            switch(type) {
+                case 'success':
+                    typeClass = '✅ ';
+                    break;
+                case 'error':
+                    typeClass = '❌ ';
+                    break;
+                case 'warning':
+                    typeClass = '⚠️ ';
+                    break;
+                case 'info':
+                    typeClass = 'ℹ️ ';
+                    break;
+                default:
+                    typeClass = '🔍 ';
+            }
+            
+            logArea.textContent += `[${timestamp}] ${typeClass}${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        // 更新步骤状态
+        function updateStepStatus(step, status) {
+            const stepElement = document.getElementById(`step${step}`);
+            stepElement.className = 'step';
+            
+            if (status === 'active') {
+                stepElement.classList.add('active');
+            } else if (status === 'completed') {
+                stepElement.classList.add('completed');
+            }
+        }
+        
+        // 清空日志
+        function clearLog() {
+            document.getElementById('logArea').textContent = '';
+            document.getElementById('analysisResult').textContent = '等待执行调试...\n';
+            document.querySelector('#headersTable tbody').innerHTML = '<tr><td colspan="2">等待执行调试...</td></tr>';
+            
+            // 重置步骤状态
+            for (let i = 1; i <= 4; i++) {
+                updateStepStatus(i, i === 1 ? 'active' : '');
+            }
+        }
+        
+        // 步骤1: 检测访问方式
+        function step1_DetectAccessMethod() {
+            addLog('🚀 开始执行步骤1: 检测访问方式...', 'info');
+            updateStepStatus(1, 'active');
+            
+            const currentHost = window.location.host;
+            const hostname = currentHost.split(':')[0];
+            const isIP = /^(\d{1,3}\.){3}\d{1,3}/.test(hostname);
+            
+            addLog(`🌐 当前访问地址: ${window.location.href}`, 'info');
+            addLog(`🏠 当前主机: ${currentHost}`, 'info');
+            addLog(`🔍 主机名部分: ${hostname}`, 'info');
+            addLog(`📊 是否为IP地址: ${isIP}`, isIP ? 'warning' : 'success');
+            
+            if (isIP) {
+                addLog('❌ 当前通过IP地址访问，不是域名访问，不会触发智能检测', 'error');
+            } else {
+                addLog('✅ 当前通过域名访问，这是智能检测的目标场景', 'success');
+            }
+            
+            // 显示请求头信息
+            displayRequestHeaders();
+            
+            updateStepStatus(1, 'completed');
+            updateStepStatus(2, 'active');
+            
+            addLog('✅ 步骤1完成，请继续执行步骤2', 'success');
+        }
+        
+        // 显示请求头信息
+        function displayRequestHeaders() {
+            const headers = {
+                'Host': window.location.host,
+                'Origin': window.location.origin,
+                'User-Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Language': navigator.language,
+                'Online': navigator.onLine,
+                'Cookies': document.cookie || '无'
+            };
+            
+            const tbody = document.querySelector('#headersTable tbody');
+            tbody.innerHTML = '';
+            
+            for (const [key, value] of Object.entries(headers)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td><strong>${key}</strong></td><td>${value}</td>`;
+                tbody.appendChild(row);
+            }
+        }
+        
+        // 步骤2: 测试API调用
+        function step2_TestAPICall() {
+            addLog('📡 开始执行步骤2: 测试API调用...', 'info');
+            updateStepStatus(2, 'active');
+            
+            fetch('/api/lan-check')
+                .then(response => {
+                    addLog(`📡 API响应状态: ${response.status}`, response.ok ? 'success' : 'error');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    addLog('✅ 局域网检测API调用成功', 'success');
+                    addLog('📊 API返回数据:', 'info');
+                    addLog(JSON.stringify(data, null, 2), 'info');
+                    
+                    updateStepStatus(2, 'completed');
+                    updateStepStatus(3, 'active');
+                    
+                    addLog('✅ 步骤2完成，请继续执行步骤3', 'success');
+                })
+                .catch(error => {
+                    addLog(`❌ 局域网检测API调用失败: ${error.message}`, 'error');
+                    addLog('🔧 可能的原因:', 'warning');
+                    addLog('   1. 后端服务未启动', 'warning');
+                    addLog('   2. 网络连接问题', 'warning');
+                    addLog('   3. API路径错误', 'warning');
+                    
+                    updateStepStatus(2, 'completed');
+                });
+        }
+        
+        // 步骤3: 分析显示条件
+        function step3_AnalyzeConditions() {
+            addLog('📊 开始执行步骤3: 分析显示条件...', 'info');
+            updateStepStatus(3, 'active');
+            
+            fetch('/api/lan-check')
+                .then(response => response.json())
+                .then(data => {
+                    addLog('🔍 条件分析:', 'info');
+                    addLog(`  - 是否IP访问: ${data.is_ip_access}`, data.is_ip_access ? 'warning' : 'success');
+                    addLog(`  - 客户端在局域网: ${data.is_client_in_lan}`, data.is_client_in_lan ? 'success' : 'warning');
+                    addLog(`  - 需要提示切换: ${data.need_switch_prompt}`, data.need_switch_prompt ? 'success' : 'warning');
+                    
+                    if (data.need_switch_prompt) {
+                        addLog('✅ 满足显示提示的所有条件！', 'success');
+                        addLog(`💡 局域网地址: ${data.lan_url}`, 'info');
+                    } else {
+                        addLog('❌ 不满足显示提示的条件', 'error');
+                        addLog('🔧 不显示的原因分析:', 'warning');
+                        
+                        if (data.is_ip_access) {
+                            addLog('   - 通过IP地址访问（应通过域名访问）', 'warning');
+                        }
+                        if (!data.is_client_in_lan) {
+                            addLog('   - 客户端不在局域网环境', 'warning');
+                        }
+                        if (!data.is_ip_access && data.is_client_in_lan && !data.need_switch_prompt) {
+                            addLog('   - 局域网地址测试失败', 'warning');
+                            addLog(`   - 局域网地址: ${data.lan_url}`, 'warning');
+                        }
+                    }
+                    
+                    // 显示详细分析结果
+                    showDetailedAnalysis(data);
+                    
+                    updateStepStatus(3, 'completed');
+                    updateStepStatus(4, 'active');
+                    
+                    addLog('✅ 步骤3完成，请继续执行步骤4', 'success');
+                })
+                .catch(error => {
+                    addLog(`❌ 获取检测数据失败: ${error.message}`, 'error');
+                });
+        }
+        
+        // 显示详细分析结果
+        function showDetailedAnalysis(data) {
+            let analysis = "🔍 详细分析结果:\n\n";
+            
+            // 检查是否为域名访问
+            if (data.is_ip_access) {
+                analysis += "❌ 问题1: 当前是通过IP地址访问，不是域名访问\n";
+                analysis += "   解决方案: 请通过域名 http://2lan.lifu.eu.org 访问\n\n";
+            } else {
+                analysis += "✅ 检查1: 当前是通过域名访问\n\n";
+            }
+            
+            // 检查客户端是否在局域网
+            if (!data.is_client_in_lan) {
+                analysis += "❌ 问题2: 客户端不在局域网环境\n";
+                analysis += `   当前客户端IP: ${data.client_ip}\n`;
+                analysis += "   解决方案: 请确保在局域网环境中访问\n\n";
+            } else {
+                analysis += "✅ 检查2: 客户端在局域网环境\n\n";
+            }
+            
+            // 检查是否需要提示
+            if (data.need_switch_prompt) {
+                analysis += "✅ 检查3: 满足显示提示的所有条件\n";
+                analysis += "   应该显示智能切换提示，但未显示可能原因:\n";
+                analysis += "   - JavaScript执行异常\n";
+                analysis += "   - 前端代码问题\n";
+                analysis += "   - 浏览器兼容性问题\n";
+                analysis += "   - CSS样式问题\n\n";
+            } else {
+                analysis += "❌ 问题3: 不满足显示提示的条件\n";
+                if (!data.is_ip_access && data.is_client_in_lan) {
+                    analysis += "   可能是局域网地址测试失败\n";
+                    analysis += `   局域网地址: ${data.lan_url}\n`;
+                    analysis += `   本机IP: ${data.local_ip}\n\n`;
+                }
+            }
+            
+            // 检查本机IP是否正确
+            if (data.local_ip === "127.0.0.1" || data.local_ip === "::1") {
+                analysis += "⚠️ 警告: 本机IP为回环地址\n";
+                analysis += "   这可能导致局域网地址测试失败\n\n";
+            }
+            
+            analysis += "📋 建议操作:\n";
+            analysis += "1. 检查浏览器控制台是否有JavaScript错误\n";
+            analysis += "2. 确认通过域名 http://2lan.lifu.eu.org 访问\n";
+            analysis += "3. 确保在局域网环境中访问\n";
+            analysis += "4. 如果仍有问题，请联系技术支持\n";
+            
+            document.getElementById('analysisResult').textContent = analysis;
+        }
+        
+        // 步骤4: 测试提示显示
+        function step4_TestPromptDisplay() {
+            addLog('🔔 开始执行步骤4: 测试提示显示...', 'info');
+            updateStepStatus(4, 'active');
+            
+            // 首先检查相关函数是否存在
+            addLog('🔍 检查相关函数是否存在...', 'info');
+            
+            if (typeof showLANSwitchPrompt === 'function') {
+                addLog('✅ showLANSwitchPrompt 函数存在', 'success');
+            } else {
+                addLog('❌ showLANSwitchPrompt 函数不存在', 'error');
+            }
+            
+            if (typeof createLANSwitchModal === 'function') {
+                addLog('✅ createLANSwitchModal 函数存在', 'success');
+            } else {
+                addLog('❌ createLANSwitchModal 函数不存在', 'error');
+            }
+            
+            // 模拟API返回数据
+            const mockData = {
+                success: true,
+                current_host: window.location.host,
+                client_ip: '192.168.3.100',
+                local_ip: '192.168.3.147',
+                is_ip_access: false,
+                is_client_in_lan: true,
+                need_switch_prompt: true,
+                lan_url: 'http://192.168.3.147:9405',
+                user_agent: navigator.userAgent,
+                referrer: ''
+            };
+            
+            addLog('🔧 使用模拟数据测试提示显示...', 'info');
+            
+            try {
+                // 尝试调用显示函数
+                if (typeof showLANSwitchPrompt === 'function') {
+                    showLANSwitchPrompt(mockData);
+                    addLog('✅ 成功调用 showLANSwitchPrompt 函数', 'success');
+                } else if (typeof createLANSwitchModal === 'function') {
+                    createLANSwitchModal(mockData);
+                    addLog('✅ 成功调用 createLANSwitchModal 函数', 'success');
+                } else {
+                    addLog('❌ 未找到显示提示的相关函数', 'error');
+                    addLog('💡 请确保在主页中测试此功能', 'warning');
+                    return;
+                }
+                
+                // 检查提示框是否创建成功
+                setTimeout(() => {
+                    const modal = document.getElementById('lanSwitchModal');
+                    if (modal) {
+                        addLog('✅ 提示框已成功创建并添加到页面', 'success');
+                        addLog('💡 如果未看到提示框，请检查CSS样式或z-index设置', 'warning');
+                    } else {
+                        addLog('❌ 提示框未创建成功', 'error');
+                        addLog('🔧 可能的原因:', 'warning');
+                        addLog('   1. DOM元素未正确添加', 'warning');
+                        addLog('   2. CSS样式问题', 'warning');
+                        addLog('   3. JavaScript执行异常', 'warning');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                addLog(`❌ 调用显示函数时发生错误: ${error.message}`, 'error');
+            }
+            
+            updateStepStatus(4, 'completed');
+            addLog('✅ 所有调试步骤完成！', 'success');
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePageInfo();
+            addLog('📄 局域网检测深度调试工具加载完成', 'success');
+            addLog('💡 请点击上方按钮按步骤执行调试', 'info');
+        });
+    </script>
+</body>
+</html>

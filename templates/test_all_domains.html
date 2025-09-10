@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通用域名智能检测测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #27ae60, #219653);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+        
+        .log-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .result-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .success-box {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .error-box {
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .warning-box {
+            border-left: 4px solid #f39c12;
+        }
+        
+        input, select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            margin: 8px;
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 通用域名智能检测测试</h1>
+    
+    <div class="container">
+        <h2>📍 测试说明</h2>
+        <div class="result-box">
+            <p>本测试页面用于验证智能局域网检测功能是否适用于所有自定义域名。</p>
+            <p>智能检测功能应该在以下条件下显示提示：</p>
+            <ol>
+                <li>通过域名访问（非IP地址）</li>
+                <li>客户端在局域网环境（IP地址为192.168.x.x、10.x.x.x或172.16-31.x.x）</li>
+            </ol>
+            <p>无论使用什么域名，只要满足上述条件就应该显示切换提示。</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>🔧 测试工具</h2>
+        <div class="result-box">
+            <h3>自定义域名测试</h3>
+            <input type="text" id="customDomain" placeholder="输入自定义域名，例如：mydomain.local" style="width: 300px;">
+            <button class="test-btn" onclick="testCustomDomain()">🧪 测试自定义域名</button>
+            
+            <h3>预设域名测试</h3>
+            <select id="presetDomains">
+                <option value="">选择预设域名...</option>
+                <option value="2lan.lifu.eu.org">2lan.lifu.eu.org</option>
+                <option value="test.local">test.local</option>
+                <option value="mydomain.com">mydomain.com</option>
+                <option value="lan.example.org">lan.example.org</option>
+                <option value="home.network">home.network</option>
+            </select>
+            <button class="test-btn" onclick="testPresetDomain()">🔍 测试预设域名</button>
+            
+            <h3>强制显示测试</h3>
+            <button class="test-btn" onclick="forceShowPrompt()">🔔 强制显示提示框</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>📋 测试日志</h2>
+        <div id="logArea" class="log-area">等待执行测试...\n</div>
+        <button class="test-btn" onclick="clearLog()" style="background: linear-gradient(45deg, #e74c3c, #c0392b);">🧹 清空日志</button>
+    </div>
+    
+    <div class="container">
+        <h2>📊 检测结果</h2>
+        <div id="resultArea" class="log-area">尚未执行测试...\n</div>
+    </div>
+
+    <script>
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let typeClass = '';
+            switch(type) {
+                case 'success':
+                    typeClass = '✅ ';
+                    break;
+                case 'error':
+                    typeClass = '❌ ';
+                    break;
+                case 'warning':
+                    typeClass = '⚠️ ';
+                    break;
+                case 'info':
+                    typeClass = 'ℹ️ ';
+                    break;
+                default:
+                    typeClass = '🔍 ';
+            }
+            
+            logArea.textContent += `[${timestamp}] ${typeClass}${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        // 清空日志
+        function clearLog() {
+            document.getElementById('logArea').textContent = '';
+            document.getElementById('resultArea').textContent = '等待执行测试...\n';
+        }
+        
+        // 测试自定义域名
+        function testCustomDomain() {
+            const domain = document.getElementById('customDomain').value.trim();
+            if (!domain) {
+                alert('请输入域名');
+                return;
+            }
+            
+            addLog(`🚀 开始测试自定义域名: ${domain}`, 'info');
+            
+            // 模拟API调用
+            simulateAPICall(domain);
+        }
+        
+        // 测试预设域名
+        function testPresetDomain() {
+            const domain = document.getElementById('presetDomains').value;
+            if (!domain) {
+                alert('请选择域名');
+                return;
+            }
+            
+            addLog(`🚀 开始测试预设域名: ${domain}`, 'info');
+            
+            // 模拟API调用
+            simulateAPICall(domain);
+        }
+        
+        // 强制显示提示框
+        function forceShowPrompt() {
+            addLog('🔔 强制显示局域网切换提示...', 'info');
+            
+            // 模拟API返回数据
+            const mockData = {
+                success: true,
+                current_host: window.location.host,
+                client_ip: '192.168.3.100',
+                local_ip: '192.168.3.147',
+                is_ip_access: false,
+                is_client_in_lan: true,
+                need_switch_prompt: true,
+                lan_url: 'http://192.168.3.147:9405',
+                user_agent: navigator.userAgent,
+                referrer: ''
+            };
+            
+            // 尝试调用显示函数
+            if (typeof showLANSwitchPrompt === 'function') {
+                showLANSwitchPrompt(mockData);
+                addLog('✅ 成功调用 showLANSwitchPrompt 函数', 'success');
+            } else if (typeof createLANSwitchModal === 'function') {
+                createLANSwitchModal(mockData);
+                addLog('✅ 成功调用 createLANSwitchModal 函数', 'success');
+            } else {
+                addLog('❌ 未找到显示提示的相关函数', 'error');
+                addLog('💡 请确保在主页中测试此功能', 'warning');
+            }
+        }
+        
+        // 模拟API调用
+        function simulateAPICall(domain) {
+            addLog(`📡 模拟调用 /api/lan-check 接口...`, 'info');
+            
+            // 模拟API返回数据（适用于任何域名）
+            const mockData = {
+                success: true,
+                current_host: domain,
+                client_ip: '192.168.3.100', // 模拟局域网IP
+                local_ip: '192.168.3.147',
+                is_ip_access: false, // 域名访问
+                is_client_in_lan: true, // 客户端在局域网
+                need_switch_prompt: true, // 需要提示切换
+                lan_url: 'http://192.168.3.147:9405',
+                user_agent: navigator.userAgent,
+                referrer: ''
+            };
+            
+            addLog(`✅ 模拟API调用成功`, 'success');
+            addLog(`📊 返回数据: ${JSON.stringify(mockData, null, 2)}`, 'info');
+            
+            // 分析结果
+            analyzeResult(mockData);
+            
+            // 显示提示框
+            if (mockData.need_switch_prompt) {
+                addLog(`🔔 检测到需要显示切换提示`, 'info');
+                if (typeof showLANSwitchPrompt === 'function') {
+                    setTimeout(() => {
+                        showLANSwitchPrompt(mockData);
+                        addLog(`✅ 已显示局域网切换提示`, 'success');
+                    }, 500);
+                }
+            }
+        }
+        
+        // 分析结果
+        function analyzeResult(data) {
+            let analysis = "🔍 检测结果分析:\n\n";
+            
+            analysis += "📋 检测条件:\n";
+            analysis += `  - 当前主机: ${data.current_host}\n`;
+            analysis += `  - 客户端IP: ${data.client_ip}\n`;
+            analysis += `  - 本机IP: ${data.local_ip}\n`;
+            analysis += `  - 是否IP访问: ${data.is_ip_access}\n`;
+            analysis += `  - 客户端在局域网: ${data.is_client_in_lan}\n`;
+            analysis += `  - 需要提示切换: ${data.need_switch_prompt}\n\n`;
+            
+            analysis += "📊 分析结果:\n";
+            if (data.need_switch_prompt) {
+                analysis += "✅ 满足显示提示的所有条件！\n";
+                analysis += "💡 适用于任何自定义域名\n";
+                analysis += "🔧 只要满足以下条件就会显示提示：\n";
+                analysis += "   1. 通过域名访问（非IP地址）\n";
+                analysis += "   2. 客户端在局域网环境\n";
+            } else {
+                analysis += "❌ 不满足显示提示的条件\n";
+                analysis += "🔧 不显示的原因:\n";
+                if (data.is_ip_access) {
+                    analysis += "   - 通过IP地址访问\n";
+                }
+                if (!data.is_client_in_lan) {
+                    analysis += "   - 客户端不在局域网环境\n";
+                }
+            }
+            
+            document.getElementById('resultArea').textContent = analysis;
+        }
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('📄 通用域名智能检测测试页面加载完成', 'success');
+            addLog('💡 请输入或选择域名进行测试', 'info');
+        });
+    </script>
+</body>
+</html>

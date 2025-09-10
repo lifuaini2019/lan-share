@@ -1,0 +1,120 @@
+{
+  "categories": {
+    "aftersale": {
+      "icon": "🛠️",
+      "name": "售后服务",
+      "templates": [
+        {
+          "title": "服务说明",
+          "content": "感谢您的信任，我们提供完善的售后服务支持。"
+        },
+        {
+          "title": "模板卡片的标题和复制按",
+          "content": "http://192.168.3.208:9405/添加flex-shrink: 0防止按钮被压缩\n设置最小宽度确保按钮可点击性\n修改效果\n现在在手机端浏览时，模板卡片的标题和复制按钮将会："
+        },
+        {
+          "title": "新机保修",
+          "content": "是我们卖出的机器都有保修的,主机主板保修一年，打印头保半年，电源附加线等保一个月。放心"
+        },
+        {
+          "title": "新机保修2",
+          "content": "保修简介,\u2029我们为主机的核心部件主板提供\u2029长达一年的保修服务，\u2029确保您在使用过程中更加安心。\u2029同时，对于打印头等高耗损部件，我们提供6个月的保修，\u2029而电源附加线等易损配件则享有1个月的保修支持，\u2029以满足实际使用需求。我们的服务政策旨在为您提供全面而灵活的保障，\u2029真正做到物有所值。"
+        },
+        {
+          "title": "维修广州地址与说明",
+          "content": "维修只要发一个主机即可\u2029（电源线或主机以外的配件不用寄过来）\u2029建议发的顺丰快递！\u2029我们收货地址,\u2029广东省广州市白云区京溪街道犀牛角东街新都小学211号\u2029电话,18102200671\u2029收件人,陈美英\u2029（运费请付清，拒收到付件）\u2029发完货后,把寄回去的地址填在这里\u2029f.wps.cn/g/kVkj5XEL"
+        },
+        {
+          "title": "化州改电车地址与说明",
+          "content": "只要发一个主机即可\u2029（不用带电源线或电源以外的其它线）\u2029建议发的顺丰快递，\u2029（回程我们也是发顺丰）\u2029地址,\u2029广东省茂名市化州市同庆镇电子市场212号\u2029（本地址三天内有效，超过三天未发出的再询地址）\u2029电话,18102200671\u2029收件人,陈美英\u2029（运费请付清，拒收到付件）\u2029发完货后,把寄回去的地址填在这里\u2029f.wps.cn/g/kVkj5XEL"
+        }
+      ]
+    },
+    "express": {
+      "icon": "📦",
+      "name": "物流查询",
+      "templates": []
+    },
+    "home": {
+      "icon": "🏠",
+      "name": "共享文字",
+      "templates": [
+        {
+          "title": "欢迎使用",
+          "content": "欢迎使用LAN-to-go局域网共享系统！您可以在这里快速分享文字内容。"
+        },
+        {
+          "title": "使用提示",
+          "content": "💡 小提示：电脑端按回车键可快速提交内容，支持多设备实时同步。"
+        }
+      ]
+    },
+    "presale": {
+      "icon": "💬",
+      "name": "售前咨询",
+      "templates": [
+        {
+          "title": "在线客服",
+          "content": "您好！欢迎咨询，我们会尽快为您解答问题。"
+        },
+        {
+          "title": "未说明",
+          "content": "我们一直在\u2029只要是工作时间都在\u2029如果没能第一时间回复你\u2029证明我们也在忙一会\u2029不过你有机器方面的问题直接问就可以\u2029我看到信息马上会回复你的\u2029以后有任何想咨询的问题，\u2029欢迎上来直接问即可..."
+        }
+      ]
+    },
+    "purchase": {
+      "icon": "🛒",
+      "name": "购买链接",
+      "templates": [
+        {
+          "title": "色带购买",
+          "content": "【微信小店】https://store.weixin.qq.com/shop/a/MCvyH8cckC4Obuh"
+        },
+        {
+          "title": "购买二款链接",
+          "content": "纯蓝牙款【微信小店】https://store.weixin.qq.com/shop/a/fLglR8bnxhN7GKz"
+        },
+        {
+          "title": "购买三款链接",
+          "content": "高级全国款【微信小店】https://store.weixin.qq.com/shop/a/Jy8YNJV1qctC4Ch"
+        },
+        {
+          "title": "购买四款链接",
+          "content": "【微信小店】高级全国蓝牙款https://store.weixin.qq.com/shop/a/rWb2tS3wWcuO3lF"
+        },
+        {
+          "title": "购买点烟线链接",
+          "content": "【微信小店】点烟票机线https://store.weixin.qq.com/shop/a/fboIDkP6Atno4Uh"
+        },
+        {
+          "title": "购买家用电源链接",
+          "content": "【微信小店】220转12V电源https://store.weixin.qq.com/shop/a/raiNFv1uPupdkWu"
+        },
+        {
+          "title": "购买电脑版链接",
+          "content": "【微信小店】电脑白色款https://store.weixin.qq.com/shop/a/fc4piuoNEMoj9Kz"
+        },
+        {
+          "title": "购买升压线链接",
+          "content": "【微信小店】打印机按键贴纸https://store.weixin.qq.com/shop/a/pG5X4Y0o4DxXHSa"
+        }
+      ]
+    },
+    "repair": {
+      "icon": "🔧",
+      "name": "维修服务",
+      "templates": []
+    },
+    "settings": {
+      "icon": "⚙️",
+      "name": "系统设置",
+      "templates": [
+        {
+          "title": "数据管理",
+          "content": "使用下方的导入导出功能管理模板数据，支持全部或指定栏目的数据备份和恢复。"
+        }
+      ]
+    }
+  }
+}
